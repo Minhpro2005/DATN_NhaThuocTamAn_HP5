@@ -1,0 +1,28 @@
+{
+  "thuoc": [
+    {
+      "maThuoc": 1,
+      "tenThuoc": "Paracetamol",
+      "giaBan": 12000,
+      "hoatChat": "Paracetamol",
+      "congDung": "Giảm đau, hạ sốt, Cảm cúm",
+      "trieuChung": ["sốt", "đau đầu", "cảm"]
+    },
+    {
+      "maThuoc": 2,
+      "tenThuoc": "Decolgen",
+      "giaBan": 15000,
+      "hoatChat": "Paracetamol + Phenylephrine",
+      "congDung": "Giảm triệu chứng cảm cúm, nghẹt mũi",
+      "trieuChung": ["ho", "nghẹt mũi", "sổ mũi"]
+    },
+    {
+      "maThuoc": 3,
+      "tenThuoc": "Ibuprofen",
+      "giaBan": 18000,
+      "hoatChat": "Ibuprofen",
+      "congDung": "Chống viêm, giảm đau, đau đầu",
+      "trieuChung": ["đau đầu", "đau răng", "viêm"]
+    }
+  ]
+}
