@@ -30,24 +30,21 @@ const newsList = [
     tieuDe: '5 Cách tăng sức đề kháng hiệu quả',
     moTa: 'Giữ sức khỏe tốt vào mùa dịch với những cách đơn giản từ chuyên gia...',
     ngayDang: '20/05/2025',
-    hinhAnh:
-      'https://cdn.nhathuoclongchau.com.vn/unsafe/257x152/https://cms-prod.s3-sgn09.fptcloud.com/cum_9666d8fbb3.png',
+    hinhAnh: 'vue-project\public\Img\tintuc1.webp',
   },
   {
     maTin: '2',
     tieuDe: 'Cảnh báo bệnh tay chân miệng trở lại',
     moTa: 'Số ca tăng nhanh ở trẻ em, cách phòng ngừa và xử lý...',
     ngayDang: '18/05/2025',
-    hinhAnh:
-      'https://cdn.nhathuoclongchau.com.vn/unsafe/257x152/https://cms-prod.s3-sgn09.fptcloud.com/tay_chan_mieng_a162a1e04b.png',
+    hinhAnh: 'vue-project\public\Img\tintuc2.webp',
   },
   {
     maTin: '3',
     tieuDe: 'Ebola tái bùng phát: Việt Nam cần làm gì?',
     moTa: 'Khuyến cáo từ Bộ Y Tế về các biện pháp phòng dịch...',
     ngayDang: '15/05/2025',
-    hinhAnh:
-      'https://cdn.nhathuoclongchau.com.vn/unsafe/257x152/https://cms-prod.s3-sgn09.fptcloud.com/ebola_073e9acd59.png',
+    hinhAnh: 'vue-project\public\Img\tintuce3.webp',
   },
 ]
 </script>

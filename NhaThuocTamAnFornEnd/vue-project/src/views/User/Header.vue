@@ -64,7 +64,7 @@ import TimKiem from './TimKiem.vue'
 import CartStore from './CartStore.js'
 
 const serverUrl = 'http://localhost:8080'
-const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'
+const defaultAvatar = 'vue-project\public\Img\avatamacdinh.png'
 
 const userInfo = ref(null)
 

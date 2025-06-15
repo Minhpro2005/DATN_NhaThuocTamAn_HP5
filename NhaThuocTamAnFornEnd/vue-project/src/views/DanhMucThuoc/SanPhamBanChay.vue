@@ -31,31 +31,31 @@ const products = ref([
     id: '1',
     name: 'Bio Acimin Fiber',
     price: 147000,
-    img: 'https://nhathuocthanthien.com.vn/wp-content/uploads/2019/03/dgm_nttt_bio-acimin-fiber.jpg',
+    img: 'vue-project\public\Img\anhthuoc1.jpg',
   },
   {
     id: '2',
     name: 'Prospan Syrup',
     price: 120000,
-    img: 'https://nhathuocthanthien.com.vn/wp-content/uploads/2019/02/dgm_nttt_prospan-100ml-250x250.jpg',
+    img: 'vue-project\public\Img\anhthuoc2.jpg',
   },
   {
     id: '3',
     name: 'Biovital Multivitamin',
     price: 135000,
-    img: 'https://nhathuocthanthien.com.vn/wp-content/uploads/2019/03/dgm_nttt_tpcn-biovital-250x250.jpg',
+    img: 'vue-project\public\Img\anhthuoc3.jpg',
   },
   {
     id: '4',
     name: 'Dizigone Nano Bạc',
     price: 125000,
-    img: 'https://cdn.nhathuoclongchau.com.vn/unsafe/256x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/00031306_dizigone_nano_bac_tuyp_25g_8953_633b_large_ca3fd63a8c.jpg',
+    img: 'vue-project\public\Img\anhthuoc4.webp',
   },
   {
     id: '5',
     name: 'Vitamin B Complex',
     price: 110000,
-    img: 'https://cdn.nhathuoclongchau.com.vn/unsafe/256x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/DSC_03594_d9d39b4d3f.jpg',
+    img: 'vue-project\public\Img\anhthuoc5.webp',
   },
 ])
 

@@ -9,11 +9,7 @@
         <!-- 5 sản phẩm cố định -->
         <div class="col-2-4 mb-4">
           <div class="card h-100">
-            <img
-              src="https://cdn.nhathuoclongchau.com.vn/unsafe/256x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/DSC_03594_d9d39b4d3f.jpg"
-              class="card-img-top"
-              alt="Sản phẩm"
-            />
+            <img src="vue-project\public\Img\anhthuoc1.jpg" class="card-img-top" alt="Sản phẩm" />
             <div class="card-body">
               <h5 class="card-title">Tên thuốc 1</h5>
               <p class="card-text text-success fw-bold">Giá: 120.000đ</p>
@@ -24,11 +20,7 @@
 
         <div class="col-2-4 mb-4">
           <div class="card h-100">
-            <img
-              src="https://cdn.nhathuoclongchau.com.vn/unsafe/256x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/00031306_dizigone_nano_bac_tuyp_25g_8953_633b_large_ca3fd63a8c.jpg"
-              class="card-img-top"
-              alt="Sản phẩm"
-            />
+            <img src="vue-project\public\Img\anhthuoc2.jpg" class="card-img-top" alt="Sản phẩm" />
             <div class="card-body">
               <h5 class="card-title">Tên thuốc 1</h5>
               <p class="card-text text-success fw-bold">Giá: 120.000đ</p>
@@ -39,11 +31,7 @@
 
         <div class="col-2-4 mb-4">
           <div class="card h-100">
-            <img
-              src="https://nhathuocthanthien.com.vn/wp-content/uploads/2019/02/dgm_nttt_prospan-100ml-250x250.jpg"
-              class="card-img-top"
-              alt="Sản phẩm"
-            />
+            <img src="vue-project\public\Img\anhthuoc3.jpg" class="card-img-top" alt="Sản phẩm" />
             <div class="card-body">
               <h5 class="card-title">Tên thuốc 1</h5>
               <p class="card-text text-success fw-bold">Giá: 120.000đ</p>
@@ -54,11 +42,7 @@
 
         <div class="col-2-4 mb-4">
           <div class="card h-100">
-            <img
-              src="https://nhathuocthanthien.com.vn/wp-content/uploads/2019/03/dgm_nttt_bio-acimin-fiber-250x250.jpg"
-              class="card-img-top"
-              alt="Sản phẩm"
-            />
+            <img src="vue-project\public\Img\anhthuoc4.webp" class="card-img-top" alt="Sản phẩm" />
             <div class="card-body">
               <h5 class="card-title">Tên thuốc 1</h5>
               <p class="card-text text-success fw-bold">Giá: 120.000đ</p>
@@ -69,11 +53,7 @@
 
         <div class="col-2-4 mb-4">
           <div class="card h-100">
-            <img
-              src="https://nhathuocthanthien.com.vn/wp-content/uploads/2019/03/dgm_nttt_tpcn-biovital-250x250.jpg"
-              class="card-img-top"
-              alt="Sản phẩm"
-            />
+            <img src="vue-project\public\Img\anhthuoc5.webp" class="card-img-top" alt="Sản phẩm" />
             <div class="card-body">
               <h5 class="card-title">Tên thuốc 1</h5>
               <p class="card-text text-success fw-bold">Giá: 120.000đ</p>

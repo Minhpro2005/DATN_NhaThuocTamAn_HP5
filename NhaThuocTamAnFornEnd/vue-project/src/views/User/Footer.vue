@@ -46,40 +46,17 @@
 
         <div class="footer-column">
           <h6 class="fw-bold">Chứng nhận bởi</h6>
-          <img
-            src="https://nhathuocthanthien.com.vn/wp-content/uploads/2022/01/dgm_nttt_tin-nhiem-mang-nhathuocthanthien.jpg"
-            alt="NCSC"
-            height="40"
-            class="mb-2 me-2"
-          />
-          <img
-            src="https://nhathuocthanthien.com.vn/wp-content/uploads/2019/08/dgm_nttt_thanthien.png"
-            alt="BCT"
-            height="40"
-          />
+          <img src="vue-project/public/Img/fotter1.jpg" alt="NCSC" height="40" class="mb-2 me-2" />
+          <img src="vue-project\public\Img\fotter2.jpg" alt="BCT" height="40" />
         </div>
 
         <div class="footer-column">
           <h6 class="fw-bold">Đối tác vận chuyển</h6>
-          <img
-            src="https://nhathuocthanthien.com.vn/wp-content/uploads/2022/01/dgm_nttt_ghtk.png"
-            alt="GHN"
-            height="30"
-            class="mb-2"
-          />
+          <img src="vue-project\public\Img\fotterdhtk.png" alt="GHN" height="30" class="mb-2" />
           <br />
-          <img
-            src="https://nhathuocthanthien.com.vn/wp-content/uploads/2022/01/dgm_nttt_ghn.png"
-            alt="GHN"
-            height="30"
-            class="mb-2"
-          />
+          <img src="vue-project\public\Img\fotterghn.png" alt="GHN" height="30" class="mb-2" />
           <br />
-          <img
-            src="https://nhathuocthanthien.com.vn/wp-content/uploads/2022/01/dgm_nttt_vtp.png"
-            alt="Viettel Post"
-            height="30"
-          />
+          <img src="vue-project\public\Img\fotterviettelpost.png" alt="Viettel Post" height="30" />
         </div>
       </div>
 

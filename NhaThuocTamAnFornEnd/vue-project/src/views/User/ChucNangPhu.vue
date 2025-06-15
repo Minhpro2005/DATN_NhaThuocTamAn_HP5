@@ -18,13 +18,13 @@
 <script setup>
 const items = [
   {
-    title: 'Gợi ý mua thuốc theo triệu trứng bệnh',
-    icon: 'https://cdn-icons-png.flaticon.com/128/2622/2622693.png',
-    link: '/goi-y-mua-thuoc-theo-trieu-trung', // Đường dẫn Vue Router
+    title: 'Gợi ý mua thuốc theo triệu chứng bệnh',
+    icon: 'vue-project\public\Img\muathuoctrieutrung.webp',
+    link: '/goi-y-mua-thuoc-theo-trieu-trung',
   },
   {
     title: 'Đơn thuốc của tôi',
-    icon: 'https://cdn-icons-png.flaticon.com/128/10298/10298814.png',
+    icon: 'vue-project\public\Img\donthuoc.webp',
     link: '/don-thuoc',
   },
 ]

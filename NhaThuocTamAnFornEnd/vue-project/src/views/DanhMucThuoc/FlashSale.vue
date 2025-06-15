@@ -21,7 +21,7 @@
               <div class="col" v-for="n in 5" :key="n">
                 <div class="card border-0 shadow-sm h-100">
                   <img
-                    src="https://cdn.nhathuoclongchau.com.vn/unsafe/256x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/DSC_04180_e961a7a6a9.png"
+                    src="vue-project\public\Img\anhthuocflseal1.webp"
                     class="card-img-top"
                     alt="Sản phẩm"
                   />
@@ -44,7 +44,7 @@
               <div class="col">
                 <div class="card border-0 shadow-sm h-100">
                   <img
-                    src="https://cdn.nhathuoclongchau.com.vn/unsafe/256x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/DSC_04267_4065764ed9.jpg"
+                    src="vue-project\public\Img\anhthuocfalsel3.webp"
                     class="card-img-top"
                     alt="Sản phẩm"
                   />
