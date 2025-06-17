@@ -51,4 +51,115 @@ public class KhachHang {
  private Boolean daXacThuc;
 
  private LocalDateTime thoiGianHetHanMa;
+
+public KhachHang() {
+	super();
+	// TODO Auto-generated constructor stub
+}
+
+public KhachHang(Integer maKH, String matKhau, String hoTen, String diaChi, String email, String soDienThoai,
+		String hinhAnh, Boolean trangThai, String maXacThuc, Boolean daXacThuc, LocalDateTime thoiGianHetHanMa) {
+	super();
+	this.maKH = maKH;
+	this.matKhau = matKhau;
+	this.hoTen = hoTen;
+	this.diaChi = diaChi;
+	this.email = email;
+	this.soDienThoai = soDienThoai;
+	this.hinhAnh = hinhAnh;
+	this.trangThai = trangThai;
+	this.maXacThuc = maXacThuc;
+	this.daXacThuc = daXacThuc;
+	this.thoiGianHetHanMa = thoiGianHetHanMa;
+}
+
+public Integer getMaKH() {
+	return maKH;
+}
+
+public void setMaKH(Integer maKH) {
+	this.maKH = maKH;
+}
+
+public String getMatKhau() {
+	return matKhau;
+}
+
+public void setMatKhau(String matKhau) {
+	this.matKhau = matKhau;
+}
+
+public String getHoTen() {
+	return hoTen;
+}
+
+public void setHoTen(String hoTen) {
+	this.hoTen = hoTen;
+}
+
+public String getDiaChi() {
+	return diaChi;
+}
+
+public void setDiaChi(String diaChi) {
+	this.diaChi = diaChi;
+}
+
+public String getEmail() {
+	return email;
+}
+
+public void setEmail(String email) {
+	this.email = email;
+}
+
+public String getSoDienThoai() {
+	return soDienThoai;
+}
+
+public void setSoDienThoai(String soDienThoai) {
+	this.soDienThoai = soDienThoai;
+}
+
+public String getHinhAnh() {
+	return hinhAnh;
+}
+
+public void setHinhAnh(String hinhAnh) {
+	this.hinhAnh = hinhAnh;
+}
+
+public Boolean getTrangThai() {
+	return trangThai;
+}
+
+public void setTrangThai(Boolean trangThai) {
+	this.trangThai = trangThai;
+}
+
+public String getMaXacThuc() {
+	return maXacThuc;
+}
+
+public void setMaXacThuc(String maXacThuc) {
+	this.maXacThuc = maXacThuc;
+}
+
+public Boolean getDaXacThuc() {
+	return daXacThuc;
+}
+
+public void setDaXacThuc(Boolean daXacThuc) {
+	this.daXacThuc = daXacThuc;
+}
+
+public LocalDateTime getThoiGianHetHanMa() {
+	return thoiGianHetHanMa;
+}
+
+public void setThoiGianHetHanMa(LocalDateTime thoiGianHetHanMa) {
+	this.thoiGianHetHanMa = thoiGianHetHanMa;
+}
+ 
+ 
 }

@@ -1,5 +1,89 @@
 package poly.NhaThuocTamAn.model;
 
-public class BienTheThuoc {
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "BienTheThuoc")
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class BienTheThuoc {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer maBienThe;
+	
+	private Integer maThuoc;
+	
+	@Column(length = 100)
+	private String tenBienThe;
+	
+	private Double giaBan;
+	
+	private String hinhAnh;
+
+	public BienTheThuoc() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public BienTheThuoc(Integer maBienThe, Integer maThuoc, String tenBienThe, Double giaBan, String hinhAnh) {
+		super();
+		this.maBienThe = maBienThe;
+		this.maThuoc = maThuoc;
+		this.tenBienThe = tenBienThe;
+		this.giaBan = giaBan;
+		this.hinhAnh = hinhAnh;
+	}
+
+	public Integer getMaBienThe() {
+		return maBienThe;
+	}
+
+	public void setMaBienThe(Integer maBienThe) {
+		this.maBienThe = maBienThe;
+	}
+
+	public Integer getMaThuoc() {
+		return maThuoc;
+	}
+
+	public void setMaThuoc(Integer maThuoc) {
+		this.maThuoc = maThuoc;
+	}
+
+	public String getTenBienThe() {
+		return tenBienThe;
+	}
+
+	public void setTenBienThe(String tenBienThe) {
+		this.tenBienThe = tenBienThe;
+	}
+
+	public Double getGiaBan() {
+		return giaBan;
+	}
+
+	public void setGiaBan(Double giaBan) {
+		this.giaBan = giaBan;
+	}
+
+	public String getHinhAnh() {
+		return hinhAnh;
+	}
+
+	public void setHinhAnh(String hinhAnh) {
+		this.hinhAnh = hinhAnh;
+	}
+	
+	
 }
