@@ -28,6 +28,15 @@ import VitaminVaKhoangChat from '@/views/DanhMucThuoc/VitaminVaKhoangChat.vue'
 import FlashSale from '@/views/DanhMucThuoc/FlashSale.vue'
 import SanPhamBanChay from '@/views/DanhMucThuoc/SanPhamBanChay.vue'
 
+// Trang quản trị
+import AdminLayout from '@/views/Admin/AdminLayout.vue'
+import Admin from '@/views/Admin/Admin.vue'
+import SanPhamAdmin from '@/views/Admin/SanPhamAdmin.vue'
+import BienTheThuoc from '@/views/Admin/BienTheThuoc.vue'
+import AnhThuoc from '@/views/Admin/AnhThuoc.vue'
+import DanhMuc from '@/views/Admin/DanhMuc.vue'
+import NhaCungCapAdmin from '@/views/Admin/NhaCungCapAdmin.vue'
+
 const routes = [
   { path: '/', redirect: '/home' },
   { path: '/home', name: 'home', component: Home },
@@ -57,6 +66,19 @@ const routes = [
       { path: 'don-hang-cua-ban', component: DonHangCuaBan },
       { path: 'lich-su-mua-hang', component: LichSuMuaHang },
       { path: 'doi-mat-khau', component: DoiMatKhau },
+    ],
+  },
+
+  {
+    path: '/admin',
+    component: AdminLayout,
+    children: [
+      { path: '', component: Admin },
+      { path: 'san-pham', component: SanPhamAdmin },
+      { path: 'bien-the', component: BienTheThuoc },
+      { path: 'anh-san-pham', component: AnhThuoc },
+      { path: 'danh-muc', component: DanhMuc },
+      { path: 'nha-cung-cap', component: NhaCungCapAdmin },
     ],
   },
 ]
