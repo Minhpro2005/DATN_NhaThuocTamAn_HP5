@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,9 +23,13 @@ public class PhieuNhapChiTiet {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer maPNCT;
 	
-	private Integer maPN;
+	@ManyToOne
+	@JoinColumn(name="maPN", table="PhieuNhap")
+	private PhieuNhap maPN;
 	
-	private Integer maBienThe;
+	@ManyToOne
+	@JoinColumn(name="maBienThe", table="BienTheThuoc")
+	private BienTheThuoc maBienThe;
 	
 	private Integer soLuong;
 	
@@ -34,7 +40,8 @@ public class PhieuNhapChiTiet {
 		// TODO Auto-generated constructor stub
 	}
 
-	public PhieuNhapChiTiet(Integer maPNCT, Integer maPN, Integer maBienThe, Integer soLuong, Double donGiaNhap) {
+	public PhieuNhapChiTiet(Integer maPNCT, PhieuNhap maPN, BienTheThuoc maBienThe, Integer soLuong,
+			Double donGiaNhap) {
 		super();
 		this.maPNCT = maPNCT;
 		this.maPN = maPN;
@@ -51,19 +58,19 @@ public class PhieuNhapChiTiet {
 		this.maPNCT = maPNCT;
 	}
 
-	public Integer getMaPN() {
+	public PhieuNhap getMaPN() {
 		return maPN;
 	}
 
-	public void setMaPN(Integer maPN) {
+	public void setMaPN(PhieuNhap maPN) {
 		this.maPN = maPN;
 	}
 
-	public Integer getMaBienThe() {
+	public BienTheThuoc getMaBienThe() {
 		return maBienThe;
 	}
 
-	public void setMaBienThe(Integer maBienThe) {
+	public void setMaBienThe(BienTheThuoc maBienThe) {
 		this.maBienThe = maBienThe;
 	}
 
@@ -82,6 +89,5 @@ public class PhieuNhapChiTiet {
 	public void setDonGiaNhap(Double donGiaNhap) {
 		this.donGiaNhap = donGiaNhap;
 	}
-	
-	
+
 }

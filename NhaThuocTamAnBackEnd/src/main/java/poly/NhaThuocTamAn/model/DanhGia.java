@@ -1,12 +1,16 @@
 package poly.NhaThuocTamAn.model;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,9 +27,13 @@ public class DanhGia {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer maDG;
 	
-	private Integer maKH;
+	@ManyToOne
+	@JoinColumn(name="maKH", table="KhachHang")
+	private KhachHang maKH;
 	
-	private Integer maBienThe;
+	@ManyToOne
+	@JoinColumn(name="maBienThe", table="BienTheThuoc")
+	private BienTheThuoc maBienThe;
 	
 	private String hinhAnh;
 	
@@ -33,10 +41,16 @@ public class DanhGia {
 	
 	private String binhLuan;
 	
-	private LocalDateTime ngayDanhGia;
+	@Temporal(TemporalType.DATE)
+	private Date ngayDanhGia;
+	
+	public DanhGia() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
 
-	public DanhGia(Integer maDG, Integer maKH, Integer maBienThe, String hinhAnh, Integer soSao, String binhLuan,
-			LocalDateTime ngayDanhGia) {
+	public DanhGia(Integer maDG, KhachHang maKH, BienTheThuoc maBienThe, String hinhAnh, Integer soSao, String binhLuan,
+			Date ngayDanhGia) {
 		super();
 		this.maDG = maDG;
 		this.maKH = maKH;
@@ -47,11 +61,6 @@ public class DanhGia {
 		this.ngayDanhGia = ngayDanhGia;
 	}
 
-	public DanhGia() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
 	public Integer getMaDG() {
 		return maDG;
 	}
@@ -60,19 +69,19 @@ public class DanhGia {
 		this.maDG = maDG;
 	}
 
-	public Integer getMaKH() {
+	public KhachHang getMaKH() {
 		return maKH;
 	}
 
-	public void setMaKH(Integer maKH) {
+	public void setMaKH(KhachHang maKH) {
 		this.maKH = maKH;
 	}
 
-	public Integer getMaBienThe() {
+	public BienTheThuoc getMaBienThe() {
 		return maBienThe;
 	}
 
-	public void setMaBienThe(Integer maBienThe) {
+	public void setMaBienThe(BienTheThuoc maBienThe) {
 		this.maBienThe = maBienThe;
 	}
 
@@ -100,11 +109,11 @@ public class DanhGia {
 		this.binhLuan = binhLuan;
 	}
 
-	public LocalDateTime getNgayDanhGia() {
+	public Date getNgayDanhGia() {
 		return ngayDanhGia;
 	}
 
-	public void setNgayDanhGia(LocalDateTime ngayDanhGia) {
+	public void setNgayDanhGia(Date ngayDanhGia) {
 		this.ngayDanhGia = ngayDanhGia;
 	}
 	

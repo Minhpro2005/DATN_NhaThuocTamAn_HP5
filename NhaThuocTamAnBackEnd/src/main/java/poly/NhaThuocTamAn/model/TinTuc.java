@@ -1,6 +1,6 @@
 package poly.NhaThuocTamAn.model;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,6 +8,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,7 +32,8 @@ public class TinTuc {
 	
 	private String noiDung;
 	
-	private LocalDateTime ngayDang;
+	@Temporal(TemporalType.DATE)
+	private Date ngayDang;
 	
 	@Column(length = 100)
 	private String tacGia;
@@ -40,7 +43,12 @@ public class TinTuc {
 	
 	private Boolean trangThai;
 
-	public TinTuc(Integer maTin, String tieuDe, String moTa, String noiDung, LocalDateTime ngayDang, String tacGia,
+	public TinTuc() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public TinTuc(Integer maTin, String tieuDe, String moTa, String noiDung, Date ngayDang, String tacGia,
 			String hinhAnh, Boolean trangThai) {
 		super();
 		this.maTin = maTin;
@@ -51,11 +59,6 @@ public class TinTuc {
 		this.tacGia = tacGia;
 		this.hinhAnh = hinhAnh;
 		this.trangThai = trangThai;
-	}
-
-	public TinTuc() {
-		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public Integer getMaTin() {
@@ -90,11 +93,11 @@ public class TinTuc {
 		this.noiDung = noiDung;
 	}
 
-	public LocalDateTime getNgayDang() {
+	public Date getNgayDang() {
 		return ngayDang;
 	}
 
-	public void setNgayDang(LocalDateTime ngayDang) {
+	public void setNgayDang(Date ngayDang) {
 		this.ngayDang = ngayDang;
 	}
 

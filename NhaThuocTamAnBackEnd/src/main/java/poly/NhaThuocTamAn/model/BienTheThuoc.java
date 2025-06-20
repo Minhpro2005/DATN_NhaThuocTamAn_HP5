@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +24,9 @@ public class BienTheThuoc {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer maBienThe;
 	
-	private Integer maThuoc;
+	@ManyToOne
+	@JoinColumn(name = "maThuoc", table = "Thuoc")
+	private Thuoc maThuoc;
 	
 	@Column(length = 100)
 	private String tenBienThe;
@@ -36,7 +40,7 @@ public class BienTheThuoc {
 		// TODO Auto-generated constructor stub
 	}
 
-	public BienTheThuoc(Integer maBienThe, Integer maThuoc, String tenBienThe, Double giaBan, String hinhAnh) {
+	public BienTheThuoc(Integer maBienThe, Thuoc maThuoc, String tenBienThe, Double giaBan, String hinhAnh) {
 		super();
 		this.maBienThe = maBienThe;
 		this.maThuoc = maThuoc;
@@ -53,11 +57,11 @@ public class BienTheThuoc {
 		this.maBienThe = maBienThe;
 	}
 
-	public Integer getMaThuoc() {
+	public Thuoc getMaThuoc() {
 		return maThuoc;
 	}
 
-	public void setMaThuoc(Integer maThuoc) {
+	public void setMaThuoc(Thuoc maThuoc) {
 		this.maThuoc = maThuoc;
 	}
 

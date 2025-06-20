@@ -7,7 +7,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,20 +28,22 @@ public class KhoHang {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer maKhoHang;
 	
-	@Column(nullable = false, unique = true)
-	private Integer maBienThe;
+	@ManyToOne
+	@JoinColumn(nullable = false, unique = true, name = "maBienThe", table = "BienTheThuoc")
+	private BienTheThuoc maBienThe;
 	
 	@Column(nullable = false)
 	private Integer soLuongTon;
 	
+	@Temporal(TemporalType.TIMESTAMP)
 	private LocalDateTime ngayCapNhat;
 	
 	private String ghiChu;
 	
 	private Integer trangThai;
 
-	public KhoHang(Integer maKhoHang, Integer maBienThe, Integer soLuongTon, LocalDateTime ngayCapNhat, String ghiChu,
-			Integer trangThai) {
+	public KhoHang(Integer maKhoHang, BienTheThuoc maBienThe, Integer soLuongTon, LocalDateTime ngayCapNhat,
+			String ghiChu, Integer trangThai) {
 		super();
 		this.maKhoHang = maKhoHang;
 		this.maBienThe = maBienThe;
@@ -52,6 +58,7 @@ public class KhoHang {
 		// TODO Auto-generated constructor stub
 	}
 
+
 	public Integer getMaKhoHang() {
 		return maKhoHang;
 	}
@@ -60,11 +67,11 @@ public class KhoHang {
 		this.maKhoHang = maKhoHang;
 	}
 
-	public Integer getMaBienThe() {
+	public BienTheThuoc getMaBienThe() {
 		return maBienThe;
 	}
 
-	public void setMaBienThe(Integer maBienThe) {
+	public void setMaBienThe(BienTheThuoc maBienThe) {
 		this.maBienThe = maBienThe;
 	}
 
@@ -99,6 +106,5 @@ public class KhoHang {
 	public void setTrangThai(Integer trangThai) {
 		this.trangThai = trangThai;
 	}
-	
 	
 }

@@ -7,7 +7,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,18 +28,26 @@ public class DonThuoc {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer maDonThuoc;
 	
-	private Integer maKH;
+	@ManyToOne
+	@JoinColumn(name="maKH", table="DonThuoc")
+	private KhachHang maKH;
 	
 	private String hinhAnh;
 	
 	private String moTa;
 	
+	@Temporal(TemporalType.TIMESTAMP)
 	private LocalDateTime ngayGui;
 	
 	@Column(length = 50)
 	private String trangThai;
 
-	public DonThuoc(Integer maDonThuoc, Integer maKH, String hinhAnh, String moTa, LocalDateTime ngayGui,
+	public DonThuoc() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public DonThuoc(Integer maDonThuoc, KhachHang maKH, String hinhAnh, String moTa, LocalDateTime ngayGui,
 			String trangThai) {
 		super();
 		this.maDonThuoc = maDonThuoc;
@@ -46,11 +58,6 @@ public class DonThuoc {
 		this.trangThai = trangThai;
 	}
 
-	public DonThuoc() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
 	public Integer getMaDonThuoc() {
 		return maDonThuoc;
 	}
@@ -59,11 +66,11 @@ public class DonThuoc {
 		this.maDonThuoc = maDonThuoc;
 	}
 
-	public Integer getMaKH() {
+	public KhachHang getMaKH() {
 		return maKH;
 	}
 
-	public void setMaKH(Integer maKH) {
+	public void setMaKH(KhachHang maKH) {
 		this.maKH = maKH;
 	}
 

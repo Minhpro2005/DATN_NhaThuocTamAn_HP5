@@ -7,7 +7,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,11 +41,13 @@ public class Thuoc {
 	
 	private Double giaBan;
 	
+	@Temporal(TemporalType.DATE)
 	private Date hanSuDung;
 	
 	@Column(length = 100)
 	private String xuatXu;
 	
+	@Temporal(TemporalType.DATE)
 	private Date ngaySanXuat;
 	
 	private String moTaThem;
@@ -53,9 +59,13 @@ public class Thuoc {
 	
 	private Boolean trangThai;
 	
-	private Integer maDM;
+	@ManyToOne
+	@JoinColumn(name = "maDM", table = "DanhMuc")
+	private DanhMuc maDM;
 	
-	private Integer maNCC;
+	@ManyToOne
+	@JoinColumn(name = "maNCC", table = "NhaCungCap")
+	private NhaCungCap maNCC;
 
 	public Thuoc() {
 		super();
@@ -64,7 +74,7 @@ public class Thuoc {
 
 	public Thuoc(Integer maThuoc, String tenThuoc, String hoatChat, String congDung, String donViTinh, Double giaNhap,
 			Double giaBan, Date hanSuDung, String xuatXu, Date ngaySanXuat, String moTaThem, String donViQuyDoi,
-			String huongDanSuDung, Boolean trangThai, Integer maDM, Integer maNCC) {
+			String huongDanSuDung, Boolean trangThai, DanhMuc maDM, NhaCungCap maNCC) {
 		super();
 		this.maThuoc = maThuoc;
 		this.tenThuoc = tenThuoc;
@@ -196,20 +206,22 @@ public class Thuoc {
 		this.trangThai = trangThai;
 	}
 
-	public Integer getMaDM() {
+	public DanhMuc getMaDM() {
 		return maDM;
 	}
 
-	public void setMaDM(Integer maDM) {
+	public void setMaDM(DanhMuc maDM) {
 		this.maDM = maDM;
 	}
 
-	public Integer getMaNCC() {
+	public NhaCungCap getMaNCC() {
 		return maNCC;
 	}
 
-	public void setMaNCC(Integer maNCC) {
+	public void setMaNCC(NhaCungCap maNCC) {
 		this.maNCC = maNCC;
 	}
 	
+	
+
 }

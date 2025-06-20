@@ -8,6 +8,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -38,6 +40,7 @@ public class NhanVien {
 	@Column(length = 20, unique = true)
 	private String cccd;
 	
+	@Temporal(TemporalType.DATE)
 	private Date ngaySinh;
 	
 	private Boolean gioiTinh;
