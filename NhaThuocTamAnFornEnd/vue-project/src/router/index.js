@@ -1,5 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+// Layouts
+import AdminLayout from '@/views/Admin/AdminLayout.vue'
+
 // Trang người dùng
 import Home from '@/views/User/Home.vue'
 import DangNhap from '@/views/User/DangNhap.vue'
@@ -29,13 +32,24 @@ import FlashSale from '@/views/DanhMucThuoc/FlashSale.vue'
 import SanPhamBanChay from '@/views/DanhMucThuoc/SanPhamBanChay.vue'
 
 // Trang quản trị
-import AdminLayout from '@/views/Admin/AdminLayout.vue'
 import Admin from '@/views/Admin/Admin.vue'
 import SanPhamAdmin from '@/views/Admin/SanPhamAdmin.vue'
 import BienTheThuoc from '@/views/Admin/BienTheThuoc.vue'
 import AnhThuoc from '@/views/Admin/AnhThuoc.vue'
 import DanhMuc from '@/views/Admin/DanhMuc.vue'
 import NhaCungCapAdmin from '@/views/Admin/NhaCungCapAdmin.vue'
+import NhapHangAdmin from '@/views/Admin/NhapHangAdmin.vue'
+import DonHang from '@/views/Admin/DonHang.vue'
+import DonHangChiTiet from '@/views/Admin/DonHangChiTiet.vue'
+import DonThuocAdmin from '@/views/Admin/DonThuocAdmin.vue'
+import ChiTietPhieuNhap from '@/views/Admin/ChiTietPhieuNhap.vue'
+import KhoHangAdmin from '@/views/Admin/KhoHangAdmin.vue'
+import KhuyenMaiAdmin from '@/views/Admin/KhuyenMaiAdmin.vue'
+import DanhGiaAdmin from '@/views/Admin/DanhGiaAdmin.vue'
+import DangBai from '@/views/Admin/DangBai.vue'
+import ChiTietBaiVietAdmin from '@/views/Admin/ChiTietBaiVietAdmin.vue'
+import NhanVienAdmin from '@/views/Admin/NhanVienAdmin.vue'
+import KhachHangAdmin from '@/views/Admin/KhachHangAdmin.vue'
 
 const routes = [
   { path: '/', redirect: '/home' },
@@ -79,6 +93,18 @@ const routes = [
       { path: 'anh-san-pham', component: AnhThuoc },
       { path: 'danh-muc', component: DanhMuc },
       { path: 'nha-cung-cap', component: NhaCungCapAdmin },
+      { path: 'nhap-hang', component: NhapHangAdmin },
+      { path: 'don-hang', component: DonHang },
+      { path: 'chi-tiet-don-hang/:maDonHang', component: DonHangChiTiet },
+      { path: 'don-thuoc', component: DonThuocAdmin },
+      { path: 'phieu-nhap/:maPN', component: ChiTietPhieuNhap },
+      { path: 'kho-hang', component: KhoHangAdmin },
+      { path: 'khuyen-mai', component: KhuyenMaiAdmin },
+      { path: 'danh-gia', component: DanhGiaAdmin },
+      { path: 'dang-bai', component: DangBai },
+      { path: 'chi-tiet-bai-viet/:id', component: ChiTietBaiVietAdmin },
+      { path: 'nhan-vien', component: NhanVienAdmin },
+      { path: 'khach-hang', component: KhachHangAdmin },
     ],
   },
 ]
