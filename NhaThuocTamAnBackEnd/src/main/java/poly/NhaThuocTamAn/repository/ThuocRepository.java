@@ -1,5 +1,10 @@
 package poly.NhaThuocTamAn.repository;
 
-public class ThuocRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import poly.NhaThuocTamAn.model.Thuoc;
+
+@Repository
+public interface ThuocRepository extends JpaRepository<Thuoc, Integer>{
 
 }

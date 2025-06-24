@@ -1,11 +1,8 @@
 package poly.NhaThuocTamAn.repository;
 
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-
 import poly.NhaThuocTamAn.model.KhachHang;
-
 import java.util.List;
 import java.util.Optional;
 
