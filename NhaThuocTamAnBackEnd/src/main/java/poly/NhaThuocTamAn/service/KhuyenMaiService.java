@@ -29,7 +29,7 @@ public class KhuyenMaiService {
 		return kmrep.save(km);
 	}
 	
-	public KhuyenMai update(KhuyenMai km) {
+	public KhuyenMai update(Integer maKM, KhuyenMai km) {
 		return kmrep.save(km);
 	}
 	

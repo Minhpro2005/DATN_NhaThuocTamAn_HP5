@@ -25,7 +25,7 @@ public class DonThuocService {
         return optional.orElse(null);
 	}
 	
-	public DonThuoc update(DonThuoc donthuoc) {
+	public DonThuoc update(Integer maDonThuoc, DonThuoc donthuoc) {
 		return donthuocrep.save(donthuoc);
 	}
 }

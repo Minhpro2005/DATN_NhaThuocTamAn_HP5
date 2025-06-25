@@ -29,7 +29,7 @@ public class NhaCungCapService {
 		return nccrep.save(ncc);
 	}
 	
-	public NhaCungCap update(NhaCungCap ncc) {
+	public NhaCungCap update(Integer maNCC, NhaCungCap ncc) {
 		return nccrep.save(ncc);
 	}
 	

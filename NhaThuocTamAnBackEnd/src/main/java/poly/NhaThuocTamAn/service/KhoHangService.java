@@ -25,7 +25,7 @@ public class KhoHangService {
         return optional.orElse(null);
 	}
 	
-	public KhoHang update(KhoHang kho) {
+	public KhoHang update(Integer maKhoHang, KhoHang kho) {
 		return khorep.save(kho);
 	}
 }

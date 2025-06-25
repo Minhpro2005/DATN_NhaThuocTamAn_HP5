@@ -29,7 +29,7 @@ public class TinTucService {
 		return tinrep.save(tin);
 	}
 	
-	public TinTuc update(TinTuc tin) {
+	public TinTuc update(Integer maTin, TinTuc tin) {
 		return tinrep.save(tin);
 	}
 	

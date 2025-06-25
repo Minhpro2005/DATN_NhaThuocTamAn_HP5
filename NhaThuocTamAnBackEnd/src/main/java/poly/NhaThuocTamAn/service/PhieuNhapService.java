@@ -29,7 +29,7 @@ public class PhieuNhapService {
 		return pnrep.save(pn);
 	}
 	
-	public PhieuNhap update(PhieuNhap pn) {
+	public PhieuNhap update(Integer maPN, PhieuNhap pn) {
 		return pnrep.save(pn);
 	}
 	
