@@ -1,8 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-// Layouts
-import AdminLayout from '@/views/Admin/AdminLayout.vue'
-
 // Trang người dùng
 import Home from '@/views/User/Home.vue'
 import DangNhap from '@/views/User/DangNhap.vue'
@@ -33,6 +30,7 @@ import SanPhamBanChay from '@/views/DanhMucThuoc/SanPhamBanChay.vue'
 
 // Trang quản trị
 import Admin from '@/views/Admin/Admin.vue'
+import AdminLayout from '@/views/Admin/AdminLayout.vue'
 import SanPhamAdmin from '@/views/Admin/SanPhamAdmin.vue'
 import BienTheThuoc from '@/views/Admin/BienTheThuoc.vue'
 import AnhThuoc from '@/views/Admin/AnhThuoc.vue'
@@ -50,6 +48,7 @@ import DangBai from '@/views/Admin/DangBai.vue'
 import ChiTietBaiVietAdmin from '@/views/Admin/ChiTietBaiVietAdmin.vue'
 import NhanVienAdmin from '@/views/Admin/NhanVienAdmin.vue'
 import KhachHangAdmin from '@/views/Admin/KhachHangAdmin.vue'
+import AdminLayout from '@/views/Admin/AdminLayout.vue'
 
 const routes = [
   { path: '/', redirect: '/home' },
