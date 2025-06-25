@@ -2,6 +2,21 @@
   <div class="container py-4">
     <h4 class="mb-4 text-success">Quản lý nhà cung cấp</h4>
 
+    <!-- Thanh tìm kiếm -->
+    <div class="mb-3">
+      <div class="input-group w-100">
+        <span class="input-group-text bg-white border-0">🔎</span>
+        <input
+          v-model="tuKhoa"
+          @input="timKiemNCC"
+          type="text"
+          class="form-control border-0 shadow-none focus-border"
+          placeholder="Tìm kiếm nhà cung cấp..."
+        />
+        <button class="btn btn-outline-secondary" @click="xoaTimKiem">Xóa</button>
+      </div>
+    </div>
+
     <!-- Nút thêm mới -->
     <div class="mb-3">
       <button class="btn btn-success" @click="openModal()">➕ Thêm nhà cung cấp</button>
@@ -32,6 +47,9 @@
                 <button class="btn btn-sm btn-warning me-2" @click="openModal(ncc)">Sửa</button>
                 <button class="btn btn-sm btn-danger" @click="xoaNCC(ncc.maNCC)">Xóa</button>
               </td>
+            </tr>
+            <tr v-if="danhSachNCC.length === 0">
+              <td colspan="6">Không có dữ liệu.</td>
             </tr>
           </tbody>
         </table>
@@ -73,28 +91,45 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
-const danhSachNCC = ref([
-  {
-    maNCC: 1,
-    tenNCC: 'Dược phẩm A',
-    diaChi: 'Hà Nội',
-    soDienThoai: '0123456789',
-    email: 'a@example.com',
-  },
-  {
-    maNCC: 2,
-    tenNCC: 'Dược phẩm B',
-    diaChi: 'TP.HCM',
-    soDienThoai: '0987654321',
-    email: 'b@example.com',
-  },
-])
-
+const serverUrl = 'http://localhost:8080/api/nhacungcap'
+const danhSachNCC = ref([])
 const showModal = ref(false)
 const form = ref({})
+const tuKhoa = ref('')
 
+// Load danh sách
+async function loadNCC() {
+  try {
+    const res = await axios.get(serverUrl)
+    danhSachNCC.value = res.data
+  } catch (err) {
+    console.error('Lỗi load:', err)
+  }
+}
+
+// Tìm kiếm
+async function timKiemNCC() {
+  try {
+    if (!tuKhoa.value.trim()) {
+      await loadNCC()
+      return
+    }
+    const res = await axios.get(`${serverUrl}/search?tenNCC=${tuKhoa.value}`)
+    danhSachNCC.value = res.data
+  } catch (err) {
+    console.error('Lỗi tìm kiếm:', err)
+  }
+}
+
+function xoaTimKiem() {
+  tuKhoa.value = ''
+  loadNCC()
+}
+
+// Mở modal thêm/sửa
 function openModal(ncc = null) {
   form.value = ncc
     ? { ...ncc }
@@ -106,27 +141,48 @@ function closeModal() {
   showModal.value = false
 }
 
-function luuNCC() {
-  if (form.value.maNCC) {
-    const index = danhSachNCC.value.findIndex((n) => n.maNCC === form.value.maNCC)
-    danhSachNCC.value[index] = { ...form.value }
-  } else {
-    const newID = Math.max(...danhSachNCC.value.map((n) => n.maNCC), 0) + 1
-    danhSachNCC.value.push({ ...form.value, maNCC: newID })
+// Lưu (thêm hoặc sửa)
+async function luuNCC() {
+  if (!form.value.tenNCC.trim()) {
+    alert('Tên nhà cung cấp không được để trống.')
+    return
   }
-  closeModal()
+  try {
+    if (form.value.maNCC) {
+      await axios.put(`${serverUrl}/${form.value.maNCC}`, form.value)
+    } else {
+      await axios.post(serverUrl, form.value)
+    }
+    await loadNCC()
+    closeModal()
+  } catch (err) {
+    console.error('Lỗi lưu:', err)
+  }
 }
 
-function xoaNCC(id) {
-  if (confirm('Bạn có chắc chắn muốn xóa nhà cung cấp này?')) {
-    danhSachNCC.value = danhSachNCC.value.filter((n) => n.maNCC !== id)
+// Xóa
+async function xoaNCC(id) {
+  if (!confirm('Xác nhận xóa?')) return
+  try {
+    await axios.delete(`${serverUrl}/${id}`)
+    await loadNCC()
+  } catch (err) {
+    console.error('Lỗi xóa:', err)
   }
 }
+
+// Load lần đầu
+onMounted(loadNCC)
 </script>
 
 <style scoped>
 .table td,
 .table th {
   vertical-align: middle;
+}
+.focus-border:focus {
+  border: 1px solid #198754 !important;
+  box-shadow: none !important;
+  outline: none;
 }
 </style>
