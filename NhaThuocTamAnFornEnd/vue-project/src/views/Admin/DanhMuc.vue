@@ -2,6 +2,21 @@
   <div class="container py-4">
     <h4 class="mb-4 text-success">Quản lý danh mục thuốc</h4>
 
+    <!-- Thanh tìm kiếm -->
+    <div class="mb-3">
+      <div class="input-group" style="max-width: 100%">
+        <span class="input-group-text bg-white border-0">🔎</span>
+        <input
+          v-model="tuKhoa"
+          @input="timKiemDanhMuc"
+          type="text"
+          class="form-control border-0 shadow-none focus-border"
+          placeholder="Tìm kiếm theo tên danh mục..."
+        />
+        <button class="btn btn-outline-secondary" @click="xoaTimKiem">Xóa</button>
+      </div>
+    </div>
+
     <!-- Nút thêm danh mục -->
     <div class="mb-3">
       <button class="btn btn-success" @click="openModal()">➕ Thêm danh mục</button>
@@ -16,7 +31,6 @@
               <th>Mã DM</th>
               <th>Tên danh mục</th>
               <th>Mô tả</th>
-              <th>Số lượng sản phẩm</th>
               <th>Hành động</th>
             </tr>
           </thead>
@@ -25,11 +39,13 @@
               <td>{{ dm.maDM }}</td>
               <td>{{ dm.tenDanhMuc }}</td>
               <td>{{ dm.moTa }}</td>
-              <td>{{ demSanPham(dm.maDM) }}</td>
               <td>
                 <button class="btn btn-sm btn-warning me-2" @click="openModal(dm)">Sửa</button>
                 <button class="btn btn-sm btn-danger" @click="xoaDanhMuc(dm.maDM)">Xóa</button>
               </td>
+            </tr>
+            <tr v-if="danhSachDanhMuc.length === 0">
+              <td colspan="4">Không có danh mục nào.</td>
             </tr>
           </tbody>
         </table>
@@ -70,24 +86,45 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
-// Danh sách danh mục mẫu
-const danhSachDanhMuc = ref([
-  { maDM: 1, tenDanhMuc: 'Thuốc giảm đau', moTa: 'Các loại thuốc hỗ trợ giảm đau' },
-  { maDM: 2, tenDanhMuc: 'Kháng sinh', moTa: 'Nhóm thuốc điều trị nhiễm khuẩn' },
-])
-
-// Danh sách sản phẩm mẫu
-const danhSachSanPham = ref([
-  { id: 1, tenSP: 'Paracetamol', maDM: 1 },
-  { id: 2, tenSP: 'Ibuprofen', maDM: 1 },
-  { id: 3, tenSP: 'Amoxicillin', maDM: 2 },
-])
-
-// Modal và form
+// Biến lưu trữ dữ liệu
+const danhSachDanhMuc = ref([])
+const tuKhoa = ref('')
 const showModal = ref(false)
 const form = ref({})
+
+// Hàm load tất cả danh mục
+async function loadDanhMuc() {
+  try {
+    const res = await axios.get('http://localhost:8080/api/danhmuc')
+    danhSachDanhMuc.value = res.data
+  } catch (err) {
+    console.error('Lỗi load danh mục:', err)
+  }
+}
+
+// Hàm tìm kiếm danh mục
+async function timKiemDanhMuc() {
+  try {
+    if (!tuKhoa.value.trim()) {
+      await loadDanhMuc()
+      return
+    }
+    const res = await axios.get(
+      `http://localhost:8080/api/danhmuc/search?tenDanhMuc=${tuKhoa.value}`,
+    )
+    danhSachDanhMuc.value = res.data
+  } catch (err) {
+    console.error('Lỗi tìm kiếm:', err)
+  }
+}
+
+function xoaTimKiem() {
+  tuKhoa.value = ''
+  loadDanhMuc()
+}
 
 // Mở modal thêm/sửa
 function openModal(dm = null) {
@@ -100,46 +137,55 @@ function closeModal() {
   showModal.value = false
 }
 
-// Lưu danh mục
-function luuDanhMuc() {
+// Lưu danh mục (thêm mới hoặc cập nhật)
+async function luuDanhMuc() {
   if (!form.value.tenDanhMuc.trim()) {
     alert('Tên danh mục không được để trống.')
     return
   }
 
-  if (form.value.maDM) {
-    const index = danhSachDanhMuc.value.findIndex((dm) => dm.maDM === form.value.maDM)
-    if (index !== -1) danhSachDanhMuc.value[index] = { ...form.value }
-  } else {
-    const newId = Math.max(...danhSachDanhMuc.value.map((dm) => dm.maDM), 0) + 1
-    danhSachDanhMuc.value.push({ ...form.value, maDM: newId })
-  }
-
-  closeModal()
-}
-
-// Xóa danh mục nếu không còn sản phẩm
-function xoaDanhMuc(id) {
-  const coSanPham = danhSachSanPham.value.some((sp) => sp.maDM === id)
-  if (coSanPham) {
-    alert('Danh mục này đang có sản phẩm, không thể xóa.')
-    return
-  }
-
-  if (confirm('Bạn có chắc chắn muốn xóa danh mục này?')) {
-    danhSachDanhMuc.value = danhSachDanhMuc.value.filter((dm) => dm.maDM !== id)
+  try {
+    if (form.value.maDM) {
+      await axios.put(`http://localhost:8080/api/danhmuc/${form.value.maDM}`, form.value)
+    } else {
+      await axios.post('http://localhost:8080/api/danhmuc', form.value)
+    }
+    await loadDanhMuc()
+    closeModal()
+  } catch (err) {
+    console.error('Lỗi lưu:', err)
+    alert('Có lỗi xảy ra khi lưu danh mục.')
   }
 }
 
-// Đếm số sản phẩm theo mã danh mục
-function demSanPham(maDM) {
-  return danhSachSanPham.value.filter((sp) => sp.maDM === maDM).length
+// Xóa danh mục
+async function xoaDanhMuc(id) {
+  if (!confirm('Bạn có chắc chắn muốn xóa danh mục này?')) return
+
+  try {
+    await axios.delete(`http://localhost:8080/api/danhmuc/${id}`)
+    await loadDanhMuc()
+  } catch (err) {
+    console.error('Lỗi xóa:', err)
+    alert('Không thể xóa danh mục.')
+  }
 }
+
+// Khi component load lần đầu
+onMounted(() => {
+  loadDanhMuc()
+})
 </script>
 
 <style scoped>
 .table td,
 .table th {
   vertical-align: middle;
+}
+
+.focus-border:focus {
+  border: 1px solid #198754 !important; /* Màu xanh Bootstrap (màu success) */
+  box-shadow: none !important;
+  outline: none;
 }
 </style>
