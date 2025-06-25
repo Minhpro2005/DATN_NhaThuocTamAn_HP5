@@ -48,7 +48,6 @@ import DangBai from '@/views/Admin/DangBai.vue'
 import ChiTietBaiVietAdmin from '@/views/Admin/ChiTietBaiVietAdmin.vue'
 import NhanVienAdmin from '@/views/Admin/NhanVienAdmin.vue'
 import KhachHangAdmin from '@/views/Admin/KhachHangAdmin.vue'
-import AdminLayout from '@/views/Admin/AdminLayout.vue'
 
 const routes = [
   { path: '/', redirect: '/home' },
