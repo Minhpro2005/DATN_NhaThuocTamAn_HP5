@@ -57,7 +57,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { UserStore } from './UserStore'
-import { CartStore } from './CartStore' // ⚠ Đã thêm đồng bộ CartStore
+import { CartStore } from './CartStore'
 
 const email = ref('')
 const password = ref('')
@@ -69,7 +69,7 @@ function togglePassword() {
   showPassword.value = !showPassword.value
 }
 
-function handleLogin() {
+async function handleLogin() {
   error.value = ''
 
   if (!email.value || !password.value) {
@@ -77,51 +77,77 @@ function handleLogin() {
     return
   }
 
-  axios
-    .post('http://localhost:8080/api/auth/dang-nhap', {
+  try {
+    const res = await axios.post('http://localhost:8080/api/auth/dang-nhap', {
       email: email.value,
       matKhau: password.value,
     })
-    .then((res) => {
-      const user = res.data
 
-      // ✅ Cập nhật reactive user info
-      UserStore.setUser(user)
-      // ✅ Đồng bộ cart ngay sau login
-      CartStore.updateCount()
+    const user = res.data
 
-      alert('✅ Đăng nhập thành công!')
+    // ✅ Lưu user vào localStorage
+    UserStore.setUser(user)
+    localStorage.setItem('userInfo', JSON.stringify(user))
+    localStorage.setItem('maKH', user.maKH)
 
-      switch (user.vaiTro) {
-        case 1:
-        case 2:
-          router.push('/admin')
-          break
-        case 3:
-        default:
-          router.push('/home')
-      }
-    })
-    .catch((err) => {
-      if (
-        err.response?.status === 403 &&
-        err.response.data?.message?.includes('chưa được xác thực')
-      ) {
-        alert(err.response.data.message)
-        const emailQuery = encodeURIComponent(email.value)
-        router.push(`/xac-thuc-email?email=${emailQuery}`)
-      } else if (err.response?.status === 401) {
-        error.value = '❌ Email hoặc mật khẩu không đúng!'
+    // ✅ Gộp giỏ hàng tạm (nếu có)
+    const tempCart = JSON.parse(localStorage.getItem('cart_temp') || '[]')
+    const key = `cart_${user.maKH}`
+    const existingCart = JSON.parse(localStorage.getItem(key) || '[]')
+
+    tempCart.forEach((item) => {
+      const found = existingCart.find((sp) => sp.id === item.id)
+      if (found) {
+        found.soLuong += item.soLuong
       } else {
-        error.value = '❌ Lỗi kết nối đến máy chủ!'
+        existingCart.push(item)
       }
     })
+
+    if (tempCart.length > 0) {
+      localStorage.setItem(key, JSON.stringify(existingCart))
+      localStorage.removeItem('cart_temp')
+    }
+
+    // ✅ Cập nhật giỏ hàng
+    CartStore.init()
+
+    alert('✅ Đăng nhập thành công!')
+
+    // ✅ Điều hướng theo vai trò
+    switch (user.vaiTro) {
+      case 1:
+      case 2:
+        router.push('/admin')
+        break
+      default:
+        router.push('/home')
+    }
+  } catch (err) {
+    const res = err.response
+
+    if (res?.status === 403) {
+      const message = res.data?.message || ''
+
+      if (message.includes('chưa được xác thực')) {
+        alert('⚠️ Tài khoản chưa được xác thực. Vui lòng kiểm tra email để xác thực.')
+        const emailFromServer = res.data?.email || email.value
+        router.push(`/xac-thuc-email?email=${encodeURIComponent(emailFromServer)}`)
+        return
+      }
+
+      // Nếu tài khoản bị khóa
+      error.value = message
+      return
+    }
+
+    error.value = res?.data?.message || 'Email hoặc mật khẩu không đúng.'
+  }
 }
 </script>
 
 <style scoped>
 @import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css');
-
 .login-container {
   background: linear-gradient(to right, #e3f2fd, #f1f8e9);
   padding: 40px 20px;

@@ -2,43 +2,41 @@
   <div
     class="forgot-password-container d-flex justify-content-center align-items-center min-vh-100"
   >
-    <div class="card shadow-lg p-4 rounded" style="max-width: 420px; width: 100%">
+    <div class="card shadow-lg p-4 rounded" style="max-width: 460px; width: 100%">
       <div class="text-center mb-3">
         <i class="bi bi-lock-fill text-success" style="font-size: 2.5rem"></i>
-        <h4 class="mt-2 text-success">Quên mật khẩu</h4>
-        <p class="text-muted mb-0" style="font-size: 0.9rem">
-          Vui lòng điền thông tin để đặt lại mật khẩu
-        </p>
+        <h4 class="mt-2 text-success fw-bold">Quên mật khẩu</h4>
+        <p class="text-muted mb-0 small">Vui lòng điền thông tin để đặt lại mật khẩu</p>
       </div>
 
       <form @submit.prevent="handleResetPassword">
         <!-- Email -->
-        <div class="form-group mb-3">
-          <label for="email">📧 Email</label>
+        <div class="mb-3">
+          <label class="form-label d-flex align-items-center">
+            <i class="bi bi-envelope-fill me-2 text-danger"></i> Email
+          </label>
           <input
             type="email"
-            class="form-control"
-            id="email"
+            class="form-control rounded-pill"
             v-model="email"
             placeholder="Nhập email"
-            required
           />
         </div>
 
         <!-- Mã xác thực -->
-        <div class="form-group mb-3">
-          <label for="verificationCode">🔐 Mã xác thực</label>
+        <div class="mb-3">
+          <label class="form-label d-flex align-items-center">
+            <i class="bi bi-key-fill me-2 text-warning"></i> Mã xác thực
+          </label>
           <div class="input-group">
             <input
               type="text"
-              class="form-control"
-              id="verificationCode"
+              class="form-control rounded-start-pill border-end-0"
               v-model="verificationCode"
               placeholder="Nhập mã xác thực"
-              required
             />
             <button
-              class="btn btn-outline-primary"
+              class="btn btn-outline-primary rounded-end-pill"
               type="button"
               :disabled="countdown > 0"
               @click="sendCode"
@@ -49,51 +47,70 @@
         </div>
 
         <!-- Mật khẩu mới -->
-        <div class="form-group mb-3">
-          <label for="newPassword">🔑 Mật khẩu mới</label>
+        <div class="mb-3">
+          <label class="form-label d-flex align-items-center">
+            <i class="bi bi-shield-lock-fill me-2 text-info"></i> Mật khẩu mới
+          </label>
           <div class="input-group">
             <input
               :type="showNewPassword ? 'text' : 'password'"
-              class="form-control"
-              id="newPassword"
+              class="form-control rounded-start-pill border-end-0"
               v-model="newPassword"
-              placeholder="Nhập mật khẩu mới"
-              required
+              placeholder="Tối thiểu 6 ký tự"
             />
-            <button class="btn btn-outline-secondary" type="button" @click="toggleNewPassword">
+            <span
+              class="input-group-text bg-white rounded-end-pill border-start-0"
+              @click="toggleNewPassword"
+              style="cursor: pointer"
+            >
               <i :class="showNewPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-            </button>
+            </span>
           </div>
         </div>
 
         <!-- Xác nhận mật khẩu -->
-        <div class="form-group mb-3">
-          <label for="confirmPassword">✅ Xác nhận mật khẩu</label>
+        <div class="mb-3">
+          <label class="form-label d-flex align-items-center">
+            <i class="bi bi-check2-circle me-2 text-success"></i> Xác nhận mật khẩu
+          </label>
           <div class="input-group">
             <input
               :type="showConfirmPassword ? 'text' : 'password'"
-              class="form-control"
-              id="confirmPassword"
+              class="form-control rounded-start-pill border-end-0"
               v-model="confirmPassword"
               placeholder="Nhập lại mật khẩu mới"
-              required
             />
-            <button class="btn btn-outline-secondary" type="button" @click="toggleConfirmPassword">
+            <span
+              class="input-group-text bg-white rounded-end-pill border-start-0"
+              @click="toggleConfirmPassword"
+              style="cursor: pointer"
+            >
               <i :class="showConfirmPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-            </button>
+            </span>
           </div>
         </div>
 
         <!-- Thông báo -->
-        <div v-if="errorMessage" class="alert alert-danger py-2">{{ errorMessage }}</div>
-        <div v-if="successMessage" class="alert alert-success py-2">{{ successMessage }}</div>
+        <div v-if="errorMessage" class="alert alert-danger d-flex align-items-center py-2">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span>{{ errorMessage }}</span>
+        </div>
 
-        <!-- Buttons -->
-        <button type="submit" class="btn btn-success w-100 mt-2">
-          <i class="bi bi-arrow-repeat me-1"></i>Đổi mật khẩu
+        <div v-if="successMessage" class="alert alert-success d-flex align-items-center py-2">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <span>{{ successMessage }}</span>
+        </div>
+
+        <!-- Nút hành động -->
+        <button type="submit" class="btn btn-success w-100 rounded-pill mt-2">
+          <i class="bi bi-arrow-repeat me-1"></i> Đổi mật khẩu
         </button>
-        <button type="button" class="btn btn-secondary w-100 mt-2" @click="handleCancel">
-          <i class="bi bi-x-circle me-1"></i>Hủy
+        <button
+          type="button"
+          class="btn btn-outline-secondary w-100 rounded-pill mt-2"
+          @click="handleCancel"
+        >
+          <i class="bi bi-x-circle me-1"></i> Hủy
         </button>
       </form>
     </div>
@@ -117,7 +134,7 @@ const confirmPassword = ref('')
 const errorMessage = ref('')
 const successMessage = ref('')
 
-// Ẩn/hiện mật khẩu
+// Hiện/ẩn mật khẩu
 const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
 
@@ -128,7 +145,7 @@ function toggleConfirmPassword() {
   showConfirmPassword.value = !showConfirmPassword.value
 }
 
-// Đếm ngược gửi mã
+// Gửi mã
 const countdown = ref(0)
 let timer = null
 
@@ -170,6 +187,11 @@ function handleResetPassword() {
     return
   }
 
+  if (newPassword.value.length < 6) {
+    errorMessage.value = '⚠️ Mật khẩu phải có ít nhất 6 ký tự!'
+    return
+  }
+
   if (newPassword.value !== confirmPassword.value) {
     errorMessage.value = '⚠️ Mật khẩu xác nhận không khớp.'
     return
@@ -188,9 +210,7 @@ function handleResetPassword() {
     })
     .then(() => {
       successMessage.value = '✅ Mật khẩu đã được đặt lại thành công!'
-      setTimeout(() => {
-        router.push('/dang-nhap')
-      }, 2000)
+      setTimeout(() => router.push('/dang-nhap'), 2000)
     })
     .catch((err) => {
       errorMessage.value =
@@ -210,13 +230,16 @@ function handleCancel() {
 }
 .card {
   background-color: #fff;
-  border-radius: 16px;
+  border-radius: 20px;
 }
 input.form-control:focus {
   border-color: #2e7d32;
   box-shadow: 0 0 0 0.2rem rgba(46, 125, 50, 0.25);
 }
-button.btn-success:hover {
-  background-color: #2e7d32;
+.input-group-text {
+  height: 100%;
+}
+button:disabled {
+  opacity: 0.7;
 }
 </style>
