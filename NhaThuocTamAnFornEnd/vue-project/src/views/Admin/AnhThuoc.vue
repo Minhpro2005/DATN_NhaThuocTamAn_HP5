@@ -2,7 +2,6 @@
   <div class="container py-4">
     <h4 class="mb-4 text-success">Quản lý ảnh thuốc</h4>
 
-    <!-- Bộ lọc theo mã thuốc -->
     <div class="row mb-3">
       <div class="col-md-4">
         <input
@@ -17,30 +16,29 @@
       </div>
     </div>
 
-    <!-- Danh sách ảnh -->
     <div class="card shadow-sm">
       <div class="card-body">
-        <table class="table table-bordered table-hover">
-          <thead class="table-success text-center">
+        <table class="table table-bordered text-center">
+          <thead class="table-success">
             <tr>
               <th>Mã thuốc</th>
               <th>ID</th>
               <th>Ảnh</th>
+              <th>Chính</th>
               <th>Hành động</th>
             </tr>
           </thead>
-          <tbody class="text-center align-middle">
-            <tr v-for="anh in anhLoc" :key="anh.id">
+          <tbody>
+            <tr v-for="anh in anhLoc" :key="anh.maAnhThuoc">
               <td>{{ anh.maThuoc }}</td>
-              <td>{{ anh.id }}</td>
+              <td>{{ anh.maAnhThuoc }}</td>
+              <td><img :src="getFullImageUrl(anh.hinhAnh)" width="80" height="80" /></td>
+              <td><span v-if="anh.anhChinh">✔️</span></td>
               <td>
-                <img :src="anh.urlAnh" alt="Ảnh thuốc" width="80" height="80" class="rounded" />
-              </td>
-              <td>
-                <button class="btn btn-sm btn-warning me-2" @click="openUploadModal(anh)">
+                <button class="btn btn-warning btn-sm me-2" @click="openUploadModal(anh)">
                   Sửa
                 </button>
-                <button class="btn btn-sm btn-danger" @click="xoaAnh(anh.id)">Xóa</button>
+                <button class="btn btn-danger btn-sm" @click="xoaAnh(anh.maAnhThuoc)">Xóa</button>
               </td>
             </tr>
           </tbody>
@@ -48,7 +46,7 @@
       </div>
     </div>
 
-    <!-- Modal thêm/sửa ảnh -->
+    <!-- Modal -->
     <div
       class="modal fade"
       :class="{ show: showModal }"
@@ -68,14 +66,16 @@
               class="form-control mb-3"
               placeholder="Nhập mã thuốc"
             />
-            <input type="file" accept="image/*" class="form-control" @change="uploadImage" />
-            <img
-              v-if="newImage.urlAnh"
-              :src="newImage.urlAnh"
-              class="mt-3 rounded"
-              width="100"
-              height="100"
-            />
+            <div class="form-check mb-3">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                v-model="newImage.anhChinh"
+                id="anhChinhCheck"
+              />
+              <label class="form-check-label" for="anhChinhCheck">Là ảnh chính</label>
+            </div>
+            <UploadImg :initial="newImage.hinhAnh" @file-selected="handleFileUpload" />
           </div>
           <div class="modal-footer">
             <button class="btn btn-primary" @click="luuAnh">Lưu</button>
@@ -89,26 +89,31 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import UploadImg from '../UploadImg.vue'
 
-const danhSachAnh = ref([
-  { id: 1, maThuoc: 1, urlAnh: '' },
-  { id: 2, maThuoc: 2, urlAnh: '' },
-])
-
+const danhSachAnh = ref([])
 const maThuocFilter = ref('')
 const showModal = ref(false)
 const isEditing = ref(false)
-const newImage = ref({ maThuoc: null, urlAnh: '', id: null })
+const newImage = ref({ maAnhThuoc: null, maThuoc: null, hinhAnh: '', anhChinh: false })
+
+const fetchData = async () => {
+  const res = await fetch('http://localhost:8080/api/anh-thuoc')
+  danhSachAnh.value = await res.json()
+}
+
+onMounted(fetchData)
+
+const getFullImageUrl = (path) => {
+  return path ? `http://localhost:8080/${path.startsWith('/') ? path.slice(1) : path}` : ''
+}
 
 const openUploadModal = (anh = null) => {
-  if (anh) {
-    isEditing.value = true
-    newImage.value = { ...anh }
-  } else {
-    isEditing.value = false
-    newImage.value = { maThuoc: null, urlAnh: '', id: null }
-  }
+  isEditing.value = !!anh
+  newImage.value = anh
+    ? { ...anh }
+    : { maAnhThuoc: null, maThuoc: null, hinhAnh: '', anhChinh: false }
   showModal.value = true
 }
 
@@ -116,32 +121,48 @@ const closeModal = () => {
   showModal.value = false
 }
 
-const uploadImage = (e) => {
-  const file = e.target.files[0]
-  if (!file) return
-  const reader = new FileReader()
-  reader.onload = () => {
-    newImage.value.urlAnh = reader.result
-  }
-  reader.readAsDataURL(file)
+const handleFileUpload = async (file) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  const res = await fetch('http://localhost:8080/api/anh-thuoc/upload', {
+    method: 'POST',
+    body: formData,
+  })
+  const path = await res.text()
+  newImage.value.hinhAnh = path
 }
 
-const luuAnh = () => {
-  if (isEditing.value) {
-    const index = danhSachAnh.value.findIndex((a) => a.id === newImage.value.id)
-    if (index !== -1) {
-      danhSachAnh.value[index] = { ...newImage.value }
+const luuAnh = async () => {
+  if (!newImage.value.maThuoc) {
+    alert('❌ Vui lòng nhập mã thuốc!')
+    return
+  }
+
+  const method = isEditing.value ? 'PUT' : 'POST'
+  try {
+    const res = await fetch('http://localhost:8080/api/anh-thuoc', {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newImage.value),
+    })
+
+    if (!res.ok) {
+      const errorText = await res.text()
+      alert('❌ Lỗi: ' + errorText)
+      return
     }
-  } else {
-    const newId = danhSachAnh.value.length ? Math.max(...danhSachAnh.value.map((a) => a.id)) + 1 : 1
-    danhSachAnh.value.push({ ...newImage.value, id: newId })
+
+    await fetchData()
+    closeModal()
+  } catch (err) {
+    alert('❌ Lỗi không xác định khi lưu ảnh!')
   }
-  closeModal()
 }
 
-const xoaAnh = (id) => {
-  if (confirm('Bạn có chắc chắn muốn xóa ảnh này?')) {
-    danhSachAnh.value = danhSachAnh.value.filter((a) => a.id !== id)
+const xoaAnh = async (id) => {
+  if (confirm('Bạn có chắc chắn muốn xóa?')) {
+    await fetch(`http://localhost:8080/api/anh-thuoc/${id}`, { method: 'DELETE' })
+    await fetchData()
   }
 }
 
@@ -151,10 +172,3 @@ const anhLoc = computed(() => {
   )
 })
 </script>
-
-<style scoped>
-.table td,
-.table th {
-  vertical-align: middle;
-}
-</style>

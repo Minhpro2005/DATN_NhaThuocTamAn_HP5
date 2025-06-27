@@ -14,12 +14,12 @@
       </div>
     </div>
 
-    <!-- Đưa nút thêm xuống đây -->
+    <!-- Nút thêm -->
     <div class="mb-3">
       <button class="btn btn-success" @click="openModal()">➕ Thêm biến thể</button>
     </div>
 
-    <!-- Danh sách biến thể -->
+    <!-- Danh sách -->
     <div class="card shadow-sm">
       <div class="card-body p-0">
         <table class="table table-bordered table-hover text-center">
@@ -29,6 +29,8 @@
               <th>Mã biến thể</th>
               <th>Tên biến thể</th>
               <th>Giá bán</th>
+              <th>Đơn vị</th>
+              <th>Trạng thái</th>
               <th>Ảnh</th>
               <th>Hành động</th>
             </tr>
@@ -39,10 +41,14 @@
               <td>{{ bt.maBienThe }}</td>
               <td>{{ bt.tenBienThe }}</td>
               <td>{{ formatCurrency(bt.giaBan) }}</td>
+              <td>{{ bt.donViTinh }}</td>
+              <td :class="bt.trangThai ? 'text-success' : 'text-danger'">
+                {{ bt.trangThai ? 'Hoạt động' : 'Ngừng bán' }}
+              </td>
               <td>
                 <img
                   v-if="bt.hinhAnh"
-                  :src="bt.hinhAnh"
+                  :src="getImageUrl(bt.hinhAnh)"
                   alt="ảnh"
                   width="60"
                   height="60"
@@ -59,7 +65,7 @@
       </div>
     </div>
 
-    <!-- Modal thêm/sửa -->
+    <!-- Modal -->
     <template v-if="showModal">
       <div class="modal-backdrop fade show"></div>
       <div class="modal fade show d-block" @click.self="closeModal">
@@ -69,10 +75,9 @@
               <h5 class="modal-title">{{ form.maBienThe ? 'Sửa' : 'Thêm' }} Biến Thể</h5>
               <button class="btn-close" @click="closeModal"></button>
             </div>
-
             <div class="modal-body">
               <input
-                v-model.number="form.maThuoc"
+                v-model="form.maThuoc"
                 type="number"
                 class="form-control mb-3"
                 placeholder="Mã thuốc"
@@ -84,21 +89,39 @@
                 placeholder="Tên biến thể"
               />
               <input
-                v-model.number="form.giaBan"
+                v-model="form.giaBan"
                 type="number"
                 class="form-control mb-3"
                 placeholder="Giá bán"
               />
-              <input type="file" accept="image/*" class="form-control mb-3" @change="uploadImage" />
+              <input
+                v-model="form.donViTinh"
+                type="text"
+                class="form-control mb-3"
+                placeholder="Đơn vị tính"
+              />
+              <textarea
+                v-model="form.moTa"
+                class="form-control mb-3"
+                placeholder="Mô tả biến thể"
+              ></textarea>
+              <select v-model="form.trangThai" class="form-select mb-3">
+                <option :value="true">Hoạt động</option>
+                <option :value="false">Ngừng bán</option>
+              </select>
+              <input
+                type="file"
+                accept="image/*"
+                class="form-control mb-3"
+                @change="onFileChange"
+              />
               <img
                 v-if="form.hinhAnh"
-                :src="form.hinhAnh"
+                :src="getImageUrl(form.hinhAnh)"
                 width="100"
-                height="100"
                 class="rounded border"
               />
             </div>
-
             <div class="modal-footer">
               <button class="btn btn-primary" @click="luuBienThe">Lưu</button>
               <button class="btn btn-secondary" @click="closeModal">Hủy</button>
@@ -111,68 +134,95 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import axios from 'axios'
+import { ref, onMounted, computed } from 'vue'
 
-// Dữ liệu mẫu ban đầu
-const bienTheList = ref([
-  { maBienThe: 1, maThuoc: 1, tenBienThe: 'Vỉ 10 viên', giaBan: 25000, hinhAnh: '' },
-])
-
-const maThuocFilter = ref('')
-const showModal = ref(false)
+const bienTheList = ref([])
 const form = ref({})
+const showModal = ref(false)
+const maThuocFilter = ref('')
+const fileAnh = ref(null)
 
-// Mở modal
+onMounted(fetchData)
+
+async function fetchData() {
+  try {
+    const res = await axios.get('http://localhost:8080/api/bienthe')
+    bienTheList.value = Array.isArray(res.data) ? res.data : []
+  } catch (err) {
+    console.error('Lỗi fetch biến thể:', err)
+    bienTheList.value = []
+  }
+}
+
+function getImageUrl(path) {
+  if (!path) return ''
+  return `http://localhost:8080${path.startsWith('/') ? path : '/' + path}`
+}
+
 function openModal(bt = null) {
   form.value = bt
     ? { ...bt }
-    : { maBienThe: null, maThuoc: null, tenBienThe: '', giaBan: 0, hinhAnh: '' }
+    : {
+        maThuoc: '',
+        tenBienThe: '',
+        giaBan: '',
+        donViTinh: '',
+        moTa: '',
+        trangThai: true,
+        hinhAnh: '',
+        maBienThe: null,
+      }
+  fileAnh.value = null
   showModal.value = true
 }
 
-// Đóng modal
 function closeModal() {
   showModal.value = false
 }
 
-// Lưu biến thể (Thêm / Sửa)
-function luuBienThe() {
-  if (form.value.maBienThe) {
-    const index = bienTheList.value.findIndex((bt) => bt.maBienThe === form.value.maBienThe)
-    bienTheList.value[index] = { ...form.value }
-  } else {
-    const newID = Math.max(...bienTheList.value.map((bt) => bt.maBienThe), 0) + 1
-    bienTheList.value.push({ ...form.value, maBienThe: newID })
+function onFileChange(e) {
+  fileAnh.value = e.target.files[0]
+}
+
+async function luuBienThe() {
+  try {
+    const formData = new FormData()
+    formData.append('data', new Blob([JSON.stringify(form.value)], { type: 'application/json' }))
+    if (fileAnh.value) formData.append('file', fileAnh.value)
+
+    if (form.value.maBienThe) {
+      await axios.put(`http://localhost:8080/api/bienthe/${form.value.maBienThe}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+    } else {
+      await axios.post('http://localhost:8080/api/bienthe', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+    }
+
+    await fetchData()
+    closeModal()
+  } catch (err) {
+    console.error('Lỗi lưu:', err)
+    alert('Lỗi khi lưu biến thể thuốc.')
   }
-  closeModal()
 }
 
-// Xóa biến thể
-function xoaBienThe(id) {
-  if (confirm('Xóa biến thể này?'))
-    bienTheList.value = bienTheList.value.filter((bt) => bt.maBienThe !== id)
-}
-
-// Upload ảnh
-function uploadImage(e) {
-  const file = e.target.files[0]
-  if (!file) return
-  const reader = new FileReader()
-  reader.onload = () => {
-    form.value.hinhAnh = reader.result
+async function xoaBienThe(id) {
+  if (confirm('Xóa biến thể này?')) {
+    await axios.delete(`http://localhost:8080/api/bienthe/${id}`)
+    await fetchData()
   }
-  reader.readAsDataURL(file)
 }
 
-// Lọc dữ liệu theo mã thuốc
 const bienTheLoc = computed(() => {
-  return bienTheList.value.filter(
-    (bt) => !maThuocFilter.value || bt.maThuoc === Number(maThuocFilter.value),
-  )
+  return bienTheList.value.filter((bt) => !maThuocFilter.value || bt.maThuoc == maThuocFilter.value)
 })
 
-// Định dạng tiền
-const formatCurrency = (val) => val.toLocaleString('vi-VN') + '₫'
+function formatCurrency(val) {
+  return Number(val).toLocaleString('vi-VN') + '₫'
+}
 </script>
 
 <style scoped>
