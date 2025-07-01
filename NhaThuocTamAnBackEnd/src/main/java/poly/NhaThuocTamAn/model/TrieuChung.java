@@ -1,5 +1,5 @@
 package poly.NhaThuocTamAn.model;
 
-public class TrieuTrung {
+public class TrieuChung {
 
 }
