@@ -1,5 +1,5 @@
 <template>
-  <div class="product-details-wrapper product-details-tabs mt-5">
+  <div class="product-details-wrapper product-details-tabs mt-5" v-if="product">
     <div class="row">
       <!-- Tabs bên trái -->
       <div class="col-md-3">
@@ -19,51 +19,23 @@
       <!-- Nội dung bên phải -->
       <div class="col-md-9">
         <div v-if="selectedTab === 'moTa'">
-          <h5>Chai xịt Aloclair là gì?</h5>
-          <p>
-            Xác định vị trí vết thương hở trong khoang miệng (cấy ghép Implant, viêm lợi, chảy máu
-            chân răng, lở loét, nhiệt miệng,...).
-          </p>
-          <p>Mở nắp nhựa trong suốt và lắp đầu xịt vào. Xoay đầu xịt đến vị trí thích hợp.</p>
-          <p>
-            Hướng đầu vòi xịt vào vết thương, nhấn 1–2 lần để dung dịch tiếp xúc với vùng tổn
-            thương. An toàn khi nuốt phải.
-          </p>
-          <p><strong>Đối tượng sử dụng:</strong> Sản phẩm phù hợp dùng cho mọi lứa tuổi.</p>
+          <h5>Mô tả sản phẩm</h5>
+          <p v-html="product.moTaThem || 'Đang cập nhật...'"></p>
         </div>
 
         <div v-else-if="selectedTab === 'thanhPhan'">
           <h5>Thành phần</h5>
-          <p>Natri Hyaluronate, Aloe Vera, nước tinh khiết, không chứa cồn và chất kích ứng.</p>
+          <p v-html="product.thanhPhan || 'Đang cập nhật...'"></p>
         </div>
 
         <div v-else-if="selectedTab === 'congDung'">
           <h5>Công dụng</h5>
-          <p>
-            Giúp tạo màng sinh học bảo vệ, hỗ trợ làm lành tổn thương trong khoang miệng, giảm đau
-            tức thì.
-          </p>
+          <p v-html="product.congDung || 'Đang cập nhật...'"></p>
         </div>
 
         <div v-else-if="selectedTab === 'cachDung'">
           <h5>Cách dùng</h5>
-          <p>
-            Xịt trực tiếp vào vùng tổn thương trong khoang miệng. Sử dụng sau khi ăn hoặc trước khi
-            đi ngủ.
-          </p>
-        </div>
-
-        <div v-else-if="selectedTab === 'luuY'">
-          <h5 class="text-warning">⚠️ Lưu ý</h5>
-          <p>
-            Chờ 30 giây để sản phẩm tạo màng sinh học giúp giảm đau và hỗ trợ lành thương. Hạn chế
-            ăn/uống trong 30 phút sau khi sử dụng để đạt hiệu quả cao nhất.
-          </p>
-        </div>
-
-        <div v-else-if="selectedTab === 'baoQuan'">
-          <h5>Bảo quản</h5>
-          <p>Nơi khô ráo, thoáng mát, tránh ánh sáng trực tiếp và nhiệt độ cao.</p>
+          <p v-html="product.huongDanSuDung || 'Đang cập nhật...'"></p>
         </div>
       </div>
     </div>
@@ -71,18 +43,33 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const selectedTab = ref('moTa')
 
 const tabs = [
   { key: 'moTa', label: 'Mô tả sản phẩm' },
   { key: 'thanhPhan', label: 'Thành phần' },
   { key: 'congDung', label: 'Công dụng' },
   { key: 'cachDung', label: 'Cách dùng' },
-  { key: 'luuY', label: 'Lưu ý' },
-  { key: 'baoQuan', label: 'Bảo quản' },
 ]
 
-const selectedTab = ref('moTa')
+const product = ref(null)
+
+onMounted(async () => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/thuoc/${route.params.id}`)
+    if (res.ok) {
+      product.value = await res.json()
+    } else {
+      console.error('Không thể tải sản phẩm')
+    }
+  } catch (err) {
+    console.error('Lỗi khi fetch sản phẩm:', err)
+  }
+})
 </script>
 
 <style scoped>

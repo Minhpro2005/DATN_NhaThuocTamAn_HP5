@@ -7,27 +7,33 @@
         class="form-control"
         placeholder="Tìm sản phẩm..."
         @input="filterProducts"
+        @keydown.enter="goToSearchPage"
       />
-      <button class="btn btn-light" type="button">
+      <button class="btn btn-light" type="button" @click="goToSearchPage">
         <i class="bi bi-search"></i>
       </button>
     </div>
 
-    <!-- Kết quả gợi ý -->
+    <!-- Gợi ý -->
     <ul
       v-if="keyword && filteredProducts.length"
       class="list-group position-absolute w-100 mt-2 shadow z-3"
     >
       <router-link
-        v-for="sp in filteredProducts"
-        :key="sp.id"
-        :to="`product-detail/:id`"
+        v-for="sp in filteredProducts.slice(0, 3)"
+        :key="sp.maThuoc"
+        :to="`/chi-tiet/${sp.maThuoc}`"
         class="list-group-item list-group-item-action d-flex align-items-center gap-3"
       >
-        <img :src="sp.hinhAnh" width="50" height="50" class="rounded object-fit-cover" />
+        <img
+          :src="getImageUrl(sp.hinhAnhChinh)"
+          width="50"
+          height="50"
+          class="rounded object-fit-cover"
+        />
         <div>
-          <div class="fw-semibold">{{ sp.ten }}</div>
-          <div class="text-danger small">{{ formatGia(sp.gia) }}</div>
+          <div class="fw-semibold">{{ sp.tenThuoc }}</div>
+          <div class="text-danger small">{{ formatCurrency(sp.giaBan) }}</div>
         </div>
       </router-link>
     </ul>
@@ -36,48 +42,46 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const keyword = ref('')
 const filteredProducts = ref([])
-
-const sanPhamMau = [
-  {
-    id: 1,
-    ten: 'Paracetamol 500mg',
-    gia: 25000,
-    hinhAnh:
-      'https://cdn.nhathuoclongchau.com.vn/unsafe/144x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/IMG_0270_9483dadf83.jpg',
-  },
-  {
-    id: 2,
-    ten: 'Vitamin C 1000mg',
-    gia: 39000,
-    hinhAnh:
-      'https://cdn.nhathuoclongchau.com.vn/unsafe/256x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/00021929_perfect_white_60v_3739_600f_large_6794b33ce3.JPG',
-  },
-  {
-    id: 3,
-    ten: 'Khẩu trang y tế',
-    gia: 12000,
-    hinhAnh:
-      'https://cdn.nhathuoclongchau.com.vn/unsafe/144x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/DSC_09751_ac0903b1b2.jpg',
-  },
-  {
-    id: 3,
-    ten: 'vitamin b',
-    gia: 12000,
-    hinhAnh:
-      'https://cdn.nhathuoclongchau.com.vn/unsafe/144x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/00500234_hoat_huyet_truong_phuc_3x10_3439_6293_large_fce5c74dce.jpg',
-  },
-]
+const router = useRouter()
 
 function filterProducts() {
-  const keywordLower = keyword.value.toLowerCase()
-  filteredProducts.value = sanPhamMau.filter((sp) => sp.ten.toLowerCase().includes(keywordLower))
+  const kw = keyword.value.trim()
+  if (!kw) {
+    filteredProducts.value = []
+    return
+  }
+
+  fetch(`http://localhost:8080/api/thuoc/search?keyword=${encodeURIComponent(kw)}`)
+    .then((res) => res.json())
+    .then((data) => {
+      filteredProducts.value = data
+    })
+    .catch((err) => {
+      console.error('Lỗi khi tìm kiếm thuốc:', err)
+      filteredProducts.value = []
+    })
 }
 
-function formatGia(gia) {
-  return gia.toLocaleString('vi-VN') + '₫'
+function goToSearchPage() {
+  const kw = keyword.value.trim()
+  if (kw) {
+    router.push({ path: '/tim-kiem', query: { keyword: kw } })
+  }
+}
+
+function formatCurrency(value) {
+  return Number(value).toLocaleString('vi-VN') + '₫'
+}
+
+function getImageUrl(path) {
+  if (!path) return 'https://via.placeholder.com/100'
+  return path.startsWith('http')
+    ? path
+    : `http://localhost:8080/${path.startsWith('/') ? path.slice(1) : path}`
 }
 </script>
 
@@ -85,11 +89,9 @@ function formatGia(gia) {
 .search-bar {
   max-width: 500px;
 }
-
 .list-group-item:hover {
   background-color: #f3f3f3;
 }
-
 .object-fit-cover {
   object-fit: cover;
 }
