@@ -4,71 +4,61 @@
     <Navbar />
 
     <div class="checkout-wrapper">
-      <div class="go-back-btn mb-3">
-        <router-link to="/gio-hang" class="btn btn-outline-success">
-          <i class="bi bi-arrow-left-circle me-2"></i> Quay lại giỏ hàng
-        </router-link>
-      </div>
-
       <div class="checkout-form card p-4">
         <h5 class="fw-bold mb-4">Xác nhận đơn hàng</h5>
 
         <!-- Danh sách sản phẩm -->
-        <h6 class="mb-3">Sản phẩm đã chọn</h6>
         <div
           v-for="item in cartItems"
-          :key="item.maBienThe"
-          class="product-item d-flex align-items-center mb-3 p-3 bg-light rounded"
+          :key="item.maBienThe || item.maThuoc"
+          class="product-item d-flex align-items-center mb-3 p-2 bg-light rounded"
         >
-          <img :src="item.thumbnails?.[0] || item.img" class="product-img me-3" alt="Sản phẩm" />
+          <img :src="getImageUrl(item.hinhAnh)" class="product-img me-3" />
           <div class="flex-grow-1">
-            <h6 class="mb-1">{{ item.tenSP || item.name }}</h6>
-            <div class="text-muted small">{{ item.quyCach || '---' }}</div>
+            <h6 class="mb-1">{{ item.tenThuoc }}</h6>
+            <small class="text-muted">SL: {{ item.soLuong }}</small>
           </div>
-          <div class="text-end">
-            <div class="fw-bold text-success">{{ formatPrice(item.giaBan || item.price) }}</div>
-            <div class="text-muted">SL: {{ item.soLuong }}</div>
-          </div>
+          <div class="fw-bold text-success">{{ formatPrice(item.giaBan) }}</div>
         </div>
 
         <!-- Tổng tiền -->
-        <div class="text-end mt-3">
+        <div class="text-end my-2">
+          <p>
+            Tạm tính: <strong>{{ formatPrice(tongTienGoc) }}</strong>
+          </p>
+          <p v-if="appliedVoucher">
+            Giảm giá:
+            <strong class="text-danger">-{{ formatPrice(tienGiamGia) }}</strong>
+          </p>
           <h5 class="fw-bold">
-            Tổng tiền: <span class="text-success">{{ formatPrice(totalPrice) }}</span>
+            Tổng tiền: <span class="text-success">{{ formatPrice(totalAfterDiscount) }}</span>
           </h5>
         </div>
 
-        <!-- Voucher -->
-        <div class="mt-3">
-          <label class="mb-1">🎁 Voucher:</label>
-          <div class="input-group">
-            <input
-              type="text"
-              class="form-control"
-              :value="selectedVoucherText"
-              placeholder="Chưa chọn voucher"
-              disabled
-            />
-            <button class="btn btn-outline-primary" @click="showVoucherModal = true">
-              Chọn voucher
-            </button>
-          </div>
+        <!-- Mã giảm giá -->
+        <h6 class="mb-2">Mã giảm giá</h6>
+        <div class="input-group mb-3">
+          <input
+            v-model="selectedCode"
+            class="form-control"
+            placeholder="Nhấn để chọn mã giảm giá"
+            readonly
+          />
+          <button class="btn btn-outline-success" @click="showVoucherModal = true">Chọn mã</button>
         </div>
 
-        <!-- Giảm giá -->
-        <div v-if="giamGia > 0" class="text-end mt-2 text-success">
-          ✅ Giảm giá: {{ formatPrice(giamGia) }}
-        </div>
-
-        <!-- Tổng sau giảm -->
-        <div class="text-end mt-2">
-          <h5 class="fw-bold">
-            Thanh toán: <span class="text-danger">{{ formatPrice(totalPrice - giamGia) }}</span>
-          </h5>
+        <div v-if="appliedVoucher" class="alert alert-success py-2">
+          🎉 Đã áp dụng mã <strong>{{ appliedVoucher.maCode }}</strong> –
+          {{
+            appliedVoucher.loaiKM === 'percent'
+              ? `Giảm ${appliedVoucher.giaTri}%`
+              : `Giảm ${formatPrice(appliedVoucher.giaTri)}`
+          }}
+          <button class="btn btn-sm btn-link text-danger ms-2" @click="huyVoucher">❌ Hủy</button>
         </div>
 
         <!-- Thông tin người nhận -->
-        <h6 class="mt-4 mb-2">Thông tin người nhận</h6>
+        <h6 class="mb-2">Thông tin người nhận</h6>
         <div class="row g-3 mb-3">
           <div class="col-md-6">
             <input v-model="form.name" class="form-control" placeholder="Họ tên" />
@@ -83,18 +73,17 @@
 
         <!-- Phương thức thanh toán -->
         <h6 class="mb-2">Phương thức thanh toán</h6>
-        <div class="form-check mb-2" v-for="m in paymentMethods" :key="m.value">
+        <div class="form-check" v-for="method in paymentMethods" :key="method.value">
           <input
             class="form-check-input"
             type="radio"
-            :value="m.value"
+            :id="method.value"
             v-model="form.payment"
-            :id="m.value"
+            :value="method.value"
           />
-          <label class="form-check-label" :for="m.value">{{ m.label }}</label>
+          <label class="form-check-label" :for="method.value">{{ method.label }}</label>
         </div>
 
-        <!-- Ghi chú -->
         <textarea
           v-model="form.note"
           class="form-control mt-3"
@@ -102,45 +91,56 @@
           placeholder="Ghi chú (tuỳ chọn)"
         ></textarea>
 
+        <!-- Nút đặt hàng -->
         <button class="btn btn-success w-100 mt-4" @click="datHang">
-          <i class="bi bi-cart-check me-2"></i>Hoàn tất đặt hàng
+          <i class="bi bi-cart-check me-2"></i> Hoàn tất đặt hàng
         </button>
       </div>
     </div>
 
-    <Footer />
-
-    <!-- Modal chọn voucher -->
-    <div v-if="showVoucherModal" class="modal-overlay">
-      <div class="modal-content card p-4">
-        <h5 class="mb-3 text-success">🎯 Danh sách Voucher</h5>
-
-        <div v-if="availableVouchers.length === 0" class="text-muted">
-          Hiện chưa có voucher phù hợp.
-        </div>
-
-        <div
-          v-for="v in availableVouchers"
-          :key="v.maKM"
-          class="border rounded p-2 mb-2 d-flex justify-content-between align-items-center bg-light"
-        >
-          <div>
-            <div>
-              <strong>{{ v.tenKM }}</strong> ({{ v.maCode }})
-            </div>
-            <div class="small text-muted">
-              Giảm: {{ v.loai === 'percent' ? v.giaTri + '%' : formatPrice(v.giaTri) }}, Đơn tối
-              thiểu: {{ formatPrice(v.donHangToiThieu) }}
-            </div>
+    <!-- Modal chọn mã -->
+    <div
+      v-if="showVoucherModal"
+      class="modal fade show d-block"
+      tabindex="-1"
+      style="background-color: rgba(0, 0, 0, 0.5)"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Chọn mã giảm giá</h5>
+            <button type="button" class="btn-close" @click="showVoucherModal = false"></button>
           </div>
-          <button class="btn btn-sm btn-primary" @click="chonVoucher(v)">Chọn</button>
-        </div>
-
-        <div class="text-end">
-          <button class="btn btn-secondary mt-2" @click="showVoucherModal = false">Đóng</button>
+          <div class="modal-body p-0">
+            <ul class="list-group">
+              <li
+                v-for="voucher in filteredVouchers"
+                :key="voucher.maKM"
+                class="list-group-item list-group-item-action"
+                @click="chonVoucher(voucher)"
+                style="cursor: pointer"
+              >
+                <div class="fw-bold">{{ voucher.maCode }}</div>
+                <div class="small">
+                  {{
+                    voucher.loaiKM === 'percent'
+                      ? `Giảm ${voucher.giaTri}%`
+                      : `Giảm ${formatPrice(voucher.giaTri)}`
+                  }}
+                  – Tối thiểu: {{ formatPrice(voucher.donHangToiThieu || 0) }} – HSD:
+                  {{ new Date(voucher.ngayKetThuc).toLocaleDateString() }}
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" @click="showVoucherModal = false">Đóng</button>
+          </div>
         </div>
       </div>
     </div>
+
+    <Footer />
   </div>
 </template>
 
@@ -149,100 +149,156 @@ import Header from '../User/Header.vue'
 import Navbar from '../User/Navbar.vue'
 import Footer from '../User/Footer.vue'
 import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 import { useRouter } from 'vue-router'
+import CartStore from './CartStore'
 
 const router = useRouter()
-const cartItems = ref([])
-const storageKey = ref('cart_temp')
-
 const form = ref({ name: '', phone: '', address: '', payment: 'cod', note: '' })
-const paymentMethods = [
-  { value: 'cod', label: 'Thanh toán khi nhận hàng (COD)' },
-  { value: 'online', label: 'Thanh toán Online (VNPay, Momo...)' },
-]
 
-const selectedVoucher = ref(null)
-const giamGia = ref(0)
-const availableVouchers = ref([])
+const userInfo = ref(JSON.parse(localStorage.getItem('userInfo') || '{}'))
+const storageKey = ref(userInfo.value?.maKH ? `cart_${userInfo.value.maKH}` : 'cart_temp')
+
+const cartItems = ref([])
+const allVouchers = ref([])
+const selectedCode = ref('')
+const appliedVoucher = ref(null)
 const showVoucherModal = ref(false)
 
 onMounted(() => {
-  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
-  const maKH = userInfo?.maKH || null
-  storageKey.value = maKH ? `cart_${maKH}` : 'cart_temp'
-  cartItems.value = JSON.parse(localStorage.getItem(storageKey.value)) || []
-
-  if (userInfo) {
-    form.value.name = userInfo.hoTen || ''
-    form.value.phone = userInfo.soDienThoai || ''
-    form.value.address = userInfo.diaChi || ''
+  cartItems.value = JSON.parse(localStorage.getItem('selectedItems')) || []
+  if (userInfo.value?.hoTen) {
+    form.value.name = userInfo.value.hoTen
+    form.value.phone = userInfo.value.soDienThoai
+    form.value.address = userInfo.value.diaChi
   }
-  loadAvailableVouchers()
+
+  axios
+    .get('http://localhost:8080/api/khuyen-mai')
+    .then((res) => (allVouchers.value = res.data))
+    .catch(() => (allVouchers.value = []))
 })
 
-function loadAvailableVouchers() {
-  const list = JSON.parse(localStorage.getItem('voucherList')) || []
-  const today = new Date()
-  availableVouchers.value = list.filter((v) => {
-    const bd = new Date(v.ngayBatDau)
-    const kt = new Date(v.ngayKetThuc)
-    const conLai = v.soLuong - (v.daSuDung || 0)
-    return v.trangThai && today >= bd && today <= kt && conLai > 0
-  })
-}
+const paymentMethods = [
+  { value: 'cod', label: 'Thanh toán khi nhận hàng (COD)' },
+  { value: 'online', label: 'Thanh toán MoMo (Online)' },
+]
 
-const totalPrice = computed(() =>
-  cartItems.value.reduce((total, sp) => total + sp.soLuong * (sp.giaBan || sp.price || 0), 0),
+const tongTienGoc = computed(() =>
+  cartItems.value.reduce((sum, sp) => sum + sp.soLuong * (sp.giaBan || 0), 0),
 )
 
-const selectedVoucherText = computed(() => {
-  if (!selectedVoucher.value) return ''
-  return `${selectedVoucher.value.tenKM} (${selectedVoucher.value.maCode})`
+const tienGiamGia = computed(() => {
+  if (!appliedVoucher.value) return 0
+  const v = appliedVoucher.value
+  const giam = v.loaiKM === 'percent' ? (tongTienGoc.value * v.giaTri) / 100 : v.giaTri
+  return v.giaTriToiDa ? Math.min(giam, v.giaTriToiDa) : giam
 })
 
-function formatPrice(val) {
-  if (typeof val !== 'number' || isNaN(val)) return '0 ₫'
-  return val.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
-}
+const totalAfterDiscount = computed(() => tongTienGoc.value - tienGiamGia.value)
+
+const filteredVouchers = computed(() =>
+  allVouchers.value.filter(
+    (v) =>
+      new Date(v.ngayBatDau) <= new Date() &&
+      new Date(v.ngayKetThuc) >= new Date() &&
+      v.soLuong - (v.daSuDung || 0) > 0 &&
+      tongTienGoc.value >= (v.donHangToiThieu || 0),
+  ),
+)
 
 function chonVoucher(voucher) {
-  if (totalPrice.value < voucher.donHangToiThieu) {
-    alert('❌ Đơn hàng chưa đủ điều kiện tối thiểu!')
-    return
-  }
-
-  let giam = 0
-  const giaTri = parseFloat(voucher.giaTri)
-  const giaTriToiDa = parseFloat(voucher.giaTriToiDa)
-
-  if (voucher.loai === 'percent') {
-    giam = totalPrice.value * (giaTri / 100)
-    if (giaTriToiDa > 0) giam = Math.min(giam, giaTriToiDa)
-  } else {
-    giam = giaTri
-  }
-
-  giamGia.value = Math.round(giam)
-  selectedVoucher.value = voucher
+  appliedVoucher.value = voucher
+  selectedCode.value = voucher.maCode
   showVoucherModal.value = false
-  alert('✅ Đã áp dụng voucher thành công!')
+}
+
+function huyVoucher() {
+  appliedVoucher.value = null
+  selectedCode.value = ''
+}
+
+function formatPrice(val) {
+  return typeof val === 'number'
+    ? val.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
+    : '0 ₫'
+}
+
+function getImageUrl(path) {
+  if (!path) return 'https://cdn-icons-png.flaticon.com/512/891/891462.png'
+  return path.startsWith('http')
+    ? path
+    : `http://localhost:8080/${path.startsWith('uploads/') ? path : 'uploads/' + path}`
 }
 
 function datHang() {
   if (!form.value.name || !form.value.phone || !form.value.address) {
-    alert('❗ Vui lòng điền đầy đủ thông tin!')
+    alert('❗ Vui lòng điền đầy đủ thông tin nhận hàng!')
     return
   }
 
-  alert('✅ Đặt hàng thành công!')
-  localStorage.removeItem(storageKey.value)
-  router.push('/dat-hang-thanh-cong')
+  const dto = {
+    maKH: userInfo.value?.maKH || null,
+    maKM: appliedVoucher.value?.maKM || null,
+    diaChiNhan: form.value.address,
+    soDienThoaiNhan: form.value.phone,
+    hoTenNguoiNhan: form.value.name,
+    hinhThucThanhToan: form.value.payment,
+    ghiChu: form.value.note,
+    chiTiet: cartItems.value.map((sp) => ({
+      maThuoc: sp.maThuoc || null,
+      maBienThe: sp.maBienThe || null,
+      soLuong: sp.soLuong,
+      donGia: sp.giaBan,
+    })),
+  }
+
+  axios
+    .post('http://localhost:8080/api/donhang/create', dto)
+    .then((res) => {
+      const maDonHang = res.data?.maDonHang
+      const tongTien = totalAfterDiscount.value
+
+      // ✅ Xoá sản phẩm đã đặt khỏi giỏ hàng chính
+      const allCart = JSON.parse(localStorage.getItem(storageKey.value) || '[]')
+      const remaining = allCart.filter(
+        (item) =>
+          !cartItems.value.some(
+            (sp) =>
+              sp.maThuoc === item.maThuoc && (sp.maBienThe || null) === (item.maBienThe || null),
+          ),
+      )
+      localStorage.setItem(storageKey.value, JSON.stringify(remaining))
+      localStorage.removeItem('selectedItems')
+      CartStore.updateCount()
+
+      if (form.value.payment === 'online') {
+        axios
+          .get('http://localhost:8080/api/thanh-toan/momo', {
+            params: { orderId: maDonHang, amount: tongTien },
+          })
+          .then((res2) => {
+            if (res2.data.success) {
+              window.location.href = res2.data.payUrl
+            } else {
+              alert('❌ Lỗi tạo URL thanh toán: ' + res2.data.error)
+            }
+          })
+      } else {
+        alert('✅ Đặt hàng thành công (COD)!')
+        router.push('/dat-hang-thanh-cong')
+      }
+    })
+    .catch((err) => {
+      console.error('❌ Lỗi tạo đơn hàng:', err)
+      alert('❌ Không thể tạo đơn hàng!')
+    })
 }
 </script>
 
 <style scoped>
 .checkout-wrapper {
-  max-width: 720px;
+  max-width: 700px;
   margin: auto;
   padding: 40px 20px;
 }
@@ -252,20 +308,7 @@ function datHang() {
   object-fit: contain;
   border-radius: 6px;
 }
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-.modal-content {
-  background: white;
-  border-radius: 8px;
-  max-height: 90vh;
-  overflow-y: auto;
-  width: 600px;
+.modal {
+  z-index: 1050;
 }
 </style>

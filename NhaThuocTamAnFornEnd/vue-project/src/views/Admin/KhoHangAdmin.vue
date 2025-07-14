@@ -1,113 +1,173 @@
 <template>
   <div class="container py-4">
-    <h4 class="mb-4 text-success">📦 Quản Lý Kho Hàng</h4>
+    <h4 class="mb-4 text-success fw-bold">📦 Quản lý kho hàng</h4>
 
     <!-- Bộ lọc -->
-    <div class="row mb-3 g-2">
-      <div class="col-md-4">
+    <div class="row g-2 mb-3">
+      <div class="col-md-6">
         <input
           v-model="keyword"
+          @input="timKiem"
           type="text"
           class="form-control"
-          placeholder="🔎 Tìm kiếm theo tên biến thể..."
+          placeholder="🔍 Tìm theo mã, tên thuốc "
         />
       </div>
-      <div class="col-md-3">
-        <select v-model="filterStatus" class="form-select">
-          <option value="">Tất cả trạng thái</option>
-          <option value="het">❌ Hết hàng</option>
-          <option value="saphet">⚠️ Sắp hết</option>
-          <option value="binhthuong">✅ Bình thường</option>
+      <div class="col-md-4">
+        <select v-model="filterTrangThai" class="form-select" @change="timKiem">
+          <option value="">-- Tất cả trạng thái --</option>
+          <option value="0">✅ Bình thường</option>
+          <option value="1">⚠️ Sắp hết</option>
+          <option value="2">❌ Hết hàng</option>
         </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-outline-secondary w-100" @click="resetSearch">Xóa</button>
       </div>
     </div>
 
-    <!-- Bảng kho -->
-    <div class="table-responsive shadow-sm border">
-      <table class="table table-bordered align-middle text-center">
-        <thead class="table-success">
-          <tr>
-            <th>Mã Biến Thể</th>
-            <th>Tên Biến Thể</th>
-            <th>Số Lượng Tồn</th>
-            <th>Ngày Cập Nhật</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="kho in filteredKhoHang" :key="kho.maBienThe">
-            <td>{{ kho.maBienThe }}</td>
-            <td>{{ kho.tenBienThe }}</td>
-            <td>
-              <span :class="getStockClass(kho.soLuongTon)" class="fw-bold">
-                {{ kho.soLuongTon }}
-              </span>
-            </td>
-            <td>{{ formatDate(kho.ngayCapNhat) }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <!-- Bảng kho hàng -->
+    <table class="table table-bordered table-striped align-middle">
+      <thead class="table-success text-center">
+        <tr>
+          <th>Mã</th>
+          <th>Tên thuốc</th>
+          <th>Số lượng tồn</th>
+          <th>Trạng thái</th>
+          <th>Ngày cập nhật</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="k in paginatedKhoList" :key="k.maKhoHang">
+          <td class="text-center">{{ k.maKhoHang }}</td>
+          <td>{{ k.tenThuoc || k.tenBienThe }}</td>
+          <td class="text-end">{{ k.soLuongTon }}</td>
+          <td :class="trangThaiClass(k.trangThai)">
+            {{ getTrangThai(k.trangThai) }}
+          </td>
+          <td class="text-end">{{ formatDate(k.ngayCapNhat) }}</td>
+        </tr>
+        <tr v-if="paginatedKhoList.length === 0">
+          <td colspan="5" class="text-center text-muted">Không có dữ liệu</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Phân trang -->
+    <nav v-if="totalPages > 1" class="mt-3">
+      <ul class="pagination justify-content-center">
+        <li class="page-item" :class="{ disabled: currentPage === 0 }">
+          <button class="page-link" @click="changePage(currentPage - 1)">Trước</button>
+        </li>
+        <li
+          class="page-item"
+          v-for="page in totalPages"
+          :key="page"
+          :class="{ active: currentPage === page - 1 }"
+        >
+          <button class="page-link" @click="changePage(page - 1)">{{ page }}</button>
+        </li>
+        <li class="page-item" :class="{ disabled: currentPage === totalPages - 1 }">
+          <button class="page-link" @click="changePage(currentPage + 1)">Sau</button>
+        </li>
+      </ul>
+    </nav>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 
-const khoHang = ref([
-  {
-    maBienThe: 101,
-    tenBienThe: 'Paracetamol 500mg',
-    soLuongTon: 120,
-    ngayCapNhat: new Date().toISOString(),
-  },
-  {
-    maBienThe: 102,
-    tenBienThe: 'Vitamin C 1000mg',
-    soLuongTon: 50,
-    ngayCapNhat: new Date().toISOString(),
-  },
-  {
-    maBienThe: 103,
-    tenBienThe: 'Amoxicillin 250mg',
-    soLuongTon: 0,
-    ngayCapNhat: new Date().toISOString(),
-  },
-])
-
+// State
+const allKhoList = ref([])
 const keyword = ref('')
-const filterStatus = ref('')
+const filterTrangThai = ref('')
+const currentPage = ref(0)
+const pageSize = 10
 
-// Bộ lọc chính
-const filteredKhoHang = computed(() => {
-  return khoHang.value.filter((kho) => {
-    const nameMatch = kho.tenBienThe.toLowerCase().includes(keyword.value.toLowerCase())
+// Load dữ liệu
+const loadKho = async () => {
+  try {
+    const res = await axios.get('http://localhost:8080/api/kho-hang')
+    allKhoList.value = res.data
+  } catch (err) {
+    console.error('Lỗi khi load kho:', err)
+  }
+}
 
-    let statusMatch = true
-    if (filterStatus.value === 'het') {
-      statusMatch = kho.soLuongTon === 0
-    } else if (filterStatus.value === 'saphet') {
-      statusMatch = kho.soLuongTon > 0 && kho.soLuongTon <= 30
-    } else if (filterStatus.value === 'binhthuong') {
-      statusMatch = kho.soLuongTon > 30
-    }
-    return nameMatch && statusMatch
-  })
+const timKiem = () => {
+  currentPage.value = 0
+}
+
+const resetSearch = () => {
+  keyword.value = ''
+  filterTrangThai.value = ''
+  currentPage.value = 0
+}
+
+// Lọc và sắp xếp
+const filteredKhoList = computed(() => {
+  let list = [...allKhoList.value]
+  if (keyword.value.trim()) {
+    const kw = keyword.value.toLowerCase()
+    list = list.filter(
+      (k) =>
+        k.maKhoHang.toString().includes(kw) ||
+        k.tenThuoc?.toLowerCase().includes(kw) ||
+        k.tenBienThe?.toLowerCase().includes(kw),
+    )
+  }
+  if (filterTrangThai.value !== '') {
+    list = list.filter((k) => k.trangThai.toString() === filterTrangThai.value)
+  }
+  return list.sort((a, b) => new Date(b.ngayCapNhat) - new Date(a.ngayCapNhat))
 })
 
-function getStockClass(soLuong) {
-  if (soLuong === 0) return 'text-danger'
-  if (soLuong <= 30) return 'text-warning'
-  return 'text-success'
+// Phân trang
+const totalPages = computed(() => Math.ceil(filteredKhoList.value.length / pageSize))
+const paginatedKhoList = computed(() => {
+  const start = currentPage.value * pageSize
+  return filteredKhoList.value.slice(start, start + pageSize)
+})
+const changePage = (page) => {
+  if (page >= 0 && page < totalPages.value) currentPage.value = page
 }
 
-function formatDate(str) {
-  return new Date(str).toLocaleDateString('vi-VN')
+// Helpers
+const formatDate = (d) => {
+  if (!d) return ''
+  return new Date(d).toLocaleDateString('vi-VN')
 }
+const getTrangThai = (t) => {
+  switch (t) {
+    case 0:
+      return '✅ Bình thường'
+    case 1:
+      return '⚠️ Sắp hết'
+    case 2:
+      return '❌ Hết hàng'
+    default:
+      return 'Không rõ'
+  }
+}
+const trangThaiClass = (t) =>
+  t === 2 ? 'text-danger fw-bold' : t === 1 ? 'text-warning fw-bold' : 'text-success fw-bold'
+
+// Mounted
+onMounted(() => {
+  loadKho()
+})
 </script>
 
 <style scoped>
-.table td,
-.table th {
-  vertical-align: middle;
+.text-danger {
+  color: red !important;
+}
+.text-warning {
+  color: orange !important;
+}
+.text-success {
+  color: green !important;
 }
 </style>

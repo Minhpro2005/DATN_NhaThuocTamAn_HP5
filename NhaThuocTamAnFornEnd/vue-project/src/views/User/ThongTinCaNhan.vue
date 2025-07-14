@@ -8,7 +8,6 @@
   <div v-else class="card p-4 shadow-sm">
     <div class="row align-items-center">
       <div class="col-md-3 text-center mb-3 mb-md-0 position-relative">
-        <!-- Bọc avatar bằng label để click -->
         <label style="cursor: pointer">
           <img
             :src="getFullImageUrl(user.hinhAnh)"
@@ -45,12 +44,7 @@
             <input v-model="form.email" type="email" class="form-control" placeholder="Email" />
           </div>
           <div class="col-md-6">
-            <input
-              v-model="form.soDienThoai"
-              type="text"
-              class="form-control"
-              placeholder="Số điện thoại"
-            />
+            <input v-model="form.soDienThoai" type="text" class="form-control" placeholder="SĐT" />
           </div>
           <div class="col-md-6">
             <input v-model="form.diaChi" type="text" class="form-control" placeholder="Địa chỉ" />
@@ -69,24 +63,20 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import { UserStore } from './UserStore'
 
-// Cấu hình base URL backend (thay đổi theo server thực tế của bạn)
 const serverUrl = 'http://localhost:8080'
-
-// Avatar mặc định nếu chưa có ảnh
-const defaultAvatar = 'vue-project\public\Img\avatamacdinh.png'
+const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'
 
 const user = ref({})
 const form = ref({})
 const editing = ref(false)
 const loading = ref(true)
+const selectedFile = ref(null)
 
-const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
-const maKH = userInfo.maKH
+const maKH = UserStore.userInfo?.maKH || UserStore.userInfo?.id // ⚠️ fix chính
 
-onMounted(() => {
-  loadUser()
-})
+onMounted(loadUser)
 
 function loadUser() {
   axios
@@ -96,31 +86,35 @@ function loadUser() {
       form.value = { ...res.data }
     })
     .catch((err) => {
-      console.error('Lỗi tải thông tin cá nhân:', err)
+      console.error('Lỗi tải thông tin:', err)
       alert('Lỗi tải thông tin cá nhân')
     })
     .finally(() => (loading.value = false))
 }
 
-// Ghép URL đầy đủ cho ảnh
 function getFullImageUrl(path) {
   return path ? `${serverUrl}${path}` : defaultAvatar
 }
 
-// Upload avatar
-async function handleFileChange(e) {
-  const selectedFile = e.target.files[0]
-  if (!selectedFile) return
+function handleFileChange(e) {
+  selectedFile.value = e.target.files[0]
+  if (selectedFile.value) {
+    uploadAvatar()
+  }
+}
 
-  const formData = new FormData()
-  formData.append('file', selectedFile)
-
+async function uploadAvatar() {
   try {
+    const formData = new FormData()
+    formData.append('file', selectedFile.value)
+
     const res = await axios.post(`${serverUrl}/api/khachhang/${maKH}/avatar`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
+
     user.value = res.data
     form.value = { ...res.data }
+    UserStore.setUser(res.data)
     alert('✅ Ảnh đại diện đã được cập nhật!')
   } catch (err) {
     console.error('Lỗi upload avatar:', err)
@@ -133,6 +127,7 @@ async function saveInfo() {
     const res = await axios.put(`${serverUrl}/api/khachhang/${maKH}`, form.value)
     user.value = res.data
     form.value = { ...res.data }
+    UserStore.setUser(res.data)
     editing.value = false
     alert('✅ Cập nhật thông tin thành công!')
   } catch (err) {
