@@ -1,20 +1,23 @@
 <template>
-  <div class="container d-flex justify-content-center align-items-center min-vh-100">
-    <div class="card p-4 shadow-lg w-100" style="max-width: 450px">
-      <h4 class="text-center text-success mb-4">🔐 Xác thực email</h4>
-      <p class="text-center">
-        Chúng tôi đã gửi mã xác thực đến: <strong>{{ email }}</strong>
-      </p>
+  <div class="verify-container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card p-4 shadow-lg w-100" style="max-width: 460px; border-radius: 16px">
+      <div class="text-center mb-3">
+        <i class="bi bi-envelope-check-fill text-success" style="font-size: 3rem"></i>
+        <h4 class="text-success fw-bold mt-2">Xác thực email</h4>
+      </div>
 
       <div class="mb-3">
-        <label class="form-label">Mã xác thực</label>
+        <label class="form-label">🔐 Mã xác thực</label>
         <input v-model="code" class="form-control" placeholder="Nhập mã gồm 6 ký tự" />
       </div>
 
-      <div v-if="error" class="alert alert-danger text-center py-2">{{ error }}</div>
+      <div v-if="error" class="alert alert-danger text-center py-2">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+      </div>
 
-      <button @click="xacThuc" class="btn btn-success w-100 mb-2">Xác thực</button>
-      <button class="btn btn-link w-100" @click="guiLaiMa" :disabled="countdown > 0">
+      <button @click="xacThuc" class="btn btn-success w-100 mb-2 fw-bold">✅ Xác thực</button>
+
+      <button class="btn btn-link w-100 text-success" @click="guiLaiMa" :disabled="countdown > 0">
         <span v-if="countdown === 0">📩 Gửi lại mã xác thực</span>
         <span v-else>⏳ Gửi lại mã sau {{ countdown }}s</span>
       </button>
@@ -82,12 +85,23 @@ function startCountdown() {
 </script>
 
 <style scoped>
+.verify-container {
+  background: linear-gradient(to right, #f1f8e9, #e3f2fd);
+  padding: 20px;
+}
+
 .card {
   border-radius: 16px;
   background-color: #fff;
 }
+
 button[disabled] {
   opacity: 0.6;
   pointer-events: none;
+}
+
+input.form-control:focus {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 0.2rem rgba(46, 125, 50, 0.25);
 }
 </style>

@@ -1,42 +1,52 @@
 <template>
-  <div
-    class="forgot-password-container d-flex justify-content-center align-items-center min-vh-100"
-  >
-    <div class="card shadow-lg p-4 rounded" style="max-width: 460px; width: 100%">
-      <div class="text-center mb-3">
-        <i class="bi bi-lock-fill text-success" style="font-size: 2.5rem"></i>
-        <h4 class="mt-2 text-success fw-bold">Quên mật khẩu</h4>
-        <p class="text-muted mb-0 small">Vui lòng điền thông tin để đặt lại mật khẩu</p>
+  <div class="forgot-container d-flex justify-content-center align-items-center min-vh-100">
+    <div
+      class="card shadow p-4 text-center"
+      style="max-width: 420px; width: 100%; border-radius: 16px"
+    >
+      <div class="mb-4">
+        <img
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRiqUlj1LB8gUERYiFqhQZfT6YFZa2VRvqfwA&s"
+          alt="icon"
+          width="64"
+          class="mb-3"
+        />
+        <h4 class="fw-bold">Quên Mật Khẩu</h4>
+        <p class="text-muted small">
+          Nhập địa chỉ email đã đăng ký để nhận<br />
+          mã khôi phục mật khẩu
+        </p>
       </div>
 
-      <form @submit.prevent="handleResetPassword">
+      <form @submit.prevent="handleResetPassword" class="text-start">
         <!-- Email -->
         <div class="mb-3">
-          <label class="form-label d-flex align-items-center">
-            <i class="bi bi-envelope-fill me-2 text-danger"></i> Email
-          </label>
-          <input
-            type="email"
-            class="form-control rounded-pill"
-            v-model="email"
-            placeholder="Nhập email"
-          />
+          <label class="form-label">Email</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
+            <input
+              v-model="email"
+              type="email"
+              class="form-control"
+              placeholder="Nhập email của bạn"
+              required
+            />
+          </div>
         </div>
 
         <!-- Mã xác thực -->
         <div class="mb-3">
-          <label class="form-label d-flex align-items-center">
-            <i class="bi bi-key-fill me-2 text-warning"></i> Mã xác thực
-          </label>
+          <label class="form-label">Mã xác thực</label>
           <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-shield-lock-fill"></i></span>
             <input
-              type="text"
-              class="form-control rounded-start-pill border-end-0"
               v-model="verificationCode"
+              type="text"
+              class="form-control"
               placeholder="Nhập mã xác thực"
             />
             <button
-              class="btn btn-outline-primary rounded-end-pill"
+              class="btn btn-outline-success"
               type="button"
               :disabled="countdown > 0"
               @click="sendCode"
@@ -48,70 +58,54 @@
 
         <!-- Mật khẩu mới -->
         <div class="mb-3">
-          <label class="form-label d-flex align-items-center">
-            <i class="bi bi-shield-lock-fill me-2 text-info"></i> Mật khẩu mới
-          </label>
+          <label class="form-label">Mật khẩu mới</label>
           <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
             <input
               :type="showNewPassword ? 'text' : 'password'"
-              class="form-control rounded-start-pill border-end-0"
               v-model="newPassword"
+              class="form-control"
               placeholder="Tối thiểu 6 ký tự"
             />
-            <span
-              class="input-group-text bg-white rounded-end-pill border-start-0"
-              @click="toggleNewPassword"
-              style="cursor: pointer"
-            >
+            <button type="button" class="btn btn-outline-secondary" @click="toggleNewPassword">
               <i :class="showNewPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-            </span>
+            </button>
           </div>
         </div>
 
         <!-- Xác nhận mật khẩu -->
         <div class="mb-3">
-          <label class="form-label d-flex align-items-center">
-            <i class="bi bi-check2-circle me-2 text-success"></i> Xác nhận mật khẩu
-          </label>
+          <label class="form-label">Xác nhận mật khẩu</label>
           <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
             <input
               :type="showConfirmPassword ? 'text' : 'password'"
-              class="form-control rounded-start-pill border-end-0"
               v-model="confirmPassword"
-              placeholder="Nhập lại mật khẩu mới"
+              class="form-control"
+              placeholder="Nhập lại mật khẩu"
             />
-            <span
-              class="input-group-text bg-white rounded-end-pill border-start-0"
-              @click="toggleConfirmPassword"
-              style="cursor: pointer"
-            >
+            <button type="button" class="btn btn-outline-secondary" @click="toggleConfirmPassword">
               <i :class="showConfirmPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-            </span>
+            </button>
           </div>
         </div>
 
         <!-- Thông báo -->
-        <div v-if="errorMessage" class="alert alert-danger d-flex align-items-center py-2">
-          <i class="bi bi-exclamation-triangle-fill me-2"></i>
-          <span>{{ errorMessage }}</span>
+        <div v-if="errorMessage" class="alert alert-danger py-2">
+          <i class="bi bi-exclamation-triangle me-2"></i> {{ errorMessage }}
+        </div>
+        <div v-if="successMessage" class="alert alert-success py-2">
+          <i class="bi bi-check-circle me-2"></i> {{ successMessage }}
         </div>
 
-        <div v-if="successMessage" class="alert alert-success d-flex align-items-center py-2">
-          <i class="bi bi-check-circle-fill me-2"></i>
-          <span>{{ successMessage }}</span>
-        </div>
+        <!-- Nút -->
+        <button type="submit" class="btn btn-success w-100 rounded mt-2">Đặt lại mật khẩu</button>
 
-        <!-- Nút hành động -->
-        <button type="submit" class="btn btn-success w-100 rounded-pill mt-2">
-          <i class="bi bi-arrow-repeat me-1"></i> Đổi mật khẩu
-        </button>
-        <button
-          type="button"
-          class="btn btn-outline-secondary w-100 rounded-pill mt-2"
-          @click="handleCancel"
-        >
-          <i class="bi bi-x-circle me-1"></i> Hủy
-        </button>
+        <div class="text-center mt-3">
+          <router-link to="/dang-nhap" class="text-decoration-none small text-success">
+            ← Quay lại đăng nhập
+          </router-link>
+        </div>
       </form>
     </div>
   </div>
@@ -122,124 +116,121 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-const router = useRouter()
+const dieuHuong = useRouter()
 
-// Form
+// Biến dữ liệu
 const email = ref('')
-const verificationCode = ref('')
-const newPassword = ref('')
-const confirmPassword = ref('')
+const maXacThuc = ref('')
+const matKhauMoi = ref('')
+const xacNhanMatKhau = ref('')
+const hienMatKhauMoi = ref(false)
+const hienXacNhanMatKhau = ref(false)
 
-// Trạng thái
-const errorMessage = ref('')
-const successMessage = ref('')
+const thongBaoLoi = ref('')
+const thongBaoThanhCong = ref('')
 
-// Hiện/ẩn mật khẩu
-const showNewPassword = ref(false)
-const showConfirmPassword = ref(false)
+const demNguoc = ref(0)
+let boDemThoiGian = null
 
-function toggleNewPassword() {
-  showNewPassword.value = !showNewPassword.value
-}
-function toggleConfirmPassword() {
-  showConfirmPassword.value = !showConfirmPassword.value
+// Toggle hiện/ẩn mật khẩu
+function chuyenTrangThaiMatKhauMoi() {
+  hienMatKhauMoi.value = !hienMatKhauMoi.value
 }
 
-// Gửi mã
-const countdown = ref(0)
-let timer = null
+function chuyenTrangThaiXacNhanMatKhau() {
+  hienXacNhanMatKhau.value = !hienXacNhanMatKhau.value
+}
 
-function startCountdown() {
-  countdown.value = 60
-  timer = setInterval(() => {
-    if (countdown.value > 0) {
-      countdown.value--
+// Bắt đầu đếm ngược gửi lại mã
+function batDauDemNguoc() {
+  demNguoc.value = 60
+  boDemThoiGian = setInterval(() => {
+    if (demNguoc.value > 0) {
+      demNguoc.value--
     } else {
-      clearInterval(timer)
+      clearInterval(boDemThoiGian)
     }
   }, 1000)
 }
 
-function sendCode() {
-  errorMessage.value = ''
+// Gửi mã xác thực
+function guiMa() {
+  thongBaoLoi.value = ''
   if (!email.value) {
-    errorMessage.value = '⚠️ Vui lòng nhập email trước khi gửi mã!'
+    thongBaoLoi.value = 'Vui lòng nhập email trước khi gửi mã xác thực!'
     return
   }
 
   axios
     .post('http://localhost:8080/api/forgot/send-code', { email: email.value })
     .then(() => {
-      alert(`✅ Mã xác thực đã gửi tới ${email.value}`)
-      startCountdown()
+      alert('✅ Mã xác thực đã được gửi!')
+      batDauDemNguoc()
     })
     .catch((err) => {
-      errorMessage.value = err.response?.data?.message || 'Không thể gửi mã. Vui lòng thử lại!'
+      thongBaoLoi.value = err.response?.data?.message || 'Không thể gửi mã. Vui lòng thử lại sau.'
     })
 }
 
-function handleResetPassword() {
-  errorMessage.value = ''
-  successMessage.value = ''
+// Xử lý đặt lại mật khẩu
+function xuLyDatLaiMatKhau() {
+  thongBaoLoi.value = ''
+  thongBaoThanhCong.value = ''
 
-  if (!email.value || !verificationCode.value || !newPassword.value || !confirmPassword.value) {
-    errorMessage.value = '⚠️ Vui lòng điền đầy đủ thông tin!'
+  if (!email.value || !maXacThuc.value || !matKhauMoi.value || !xacNhanMatKhau.value) {
+    thongBaoLoi.value = 'Vui lòng điền đầy đủ các trường.'
     return
   }
 
-  if (newPassword.value.length < 6) {
-    errorMessage.value = '⚠️ Mật khẩu phải có ít nhất 6 ký tự!'
+  if (matKhauMoi.value.length < 6) {
+    thongBaoLoi.value = 'Mật khẩu phải có ít nhất 6 ký tự.'
     return
   }
 
-  if (newPassword.value !== confirmPassword.value) {
-    errorMessage.value = '⚠️ Mật khẩu xác nhận không khớp.'
+  if (matKhauMoi.value !== xacNhanMatKhau.value) {
+    thongBaoLoi.value = 'Mật khẩu xác nhận không khớp.'
     return
   }
 
   axios
     .post('http://localhost:8080/api/forgot/verify-code', {
       email: email.value,
-      code: verificationCode.value,
+      code: maXacThuc.value,
     })
-    .then(() => {
-      return axios.post('http://localhost:8080/api/forgot/reset-pass', {
+    .then(() =>
+      axios.post('http://localhost:8080/api/forgot/reset-pass', {
         email: email.value,
-        newPassword: newPassword.value,
-      })
-    })
+        newPassword: matKhauMoi.value,
+      }),
+    )
     .then(() => {
-      successMessage.value = '✅ Mật khẩu đã được đặt lại thành công!'
-      setTimeout(() => router.push('/dang-nhap'), 2000)
+      thongBaoThanhCong.value = 'Đặt lại mật khẩu thành công!'
+      setTimeout(() => dieuHuong.push('/dang-nhap'), 2000)
     })
     .catch((err) => {
-      errorMessage.value =
-        err.response?.data?.message || '❌ Mã xác thực không hợp lệ hoặc đã hết hạn!'
+      thongBaoLoi.value = err.response?.data?.message || 'Mã xác thực không hợp lệ hoặc đã hết hạn.'
     })
-}
-
-function handleCancel() {
-  router.push('/dang-nhap')
 }
 </script>
 
 <style scoped>
-.forgot-password-container {
-  background: linear-gradient(to right, #e3f2fd, #f1f8e9);
-  padding: 40px 20px;
+.forgot-container {
+  background: linear-gradient(to right, #f1f8e9, #e3f2fd);
+  padding: 20px;
 }
+
 .card {
-  background-color: #fff;
-  border-radius: 20px;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
+
 input.form-control:focus {
   border-color: #2e7d32;
   box-shadow: 0 0 0 0.2rem rgba(46, 125, 50, 0.25);
 }
-.input-group-text {
-  height: 100%;
-}
+
 button:disabled {
   opacity: 0.7;
+  cursor: not-allowed;
 }
 </style>

@@ -1,89 +1,107 @@
 <template>
-  <div class="register-container d-flex justify-content-center align-items-center min-vh-100">
-    <div class="card p-4 shadow-lg w-100" style="max-width: 500px">
-      <div class="text-center mb-4">
-        <i class="bi bi-person-plus-fill text-success" style="font-size: 2.5rem"></i>
-        <h4 class="mt-2 text-success fw-bold">Đăng ký tài khoản</h4>
-      </div>
+  <div class="register-page d-flex min-vh-100">
+    <!-- Bên trái: giới thiệu -->
+    <div
+      class="intro-section d-flex flex-column justify-content-center align-items-center text-white"
+    >
+      <h1 class="fw-bold display-5 text-center">Hệ thống Quản lý Dược phẩm</h1>
+      <p class="mt-3 fs-5 text-center">Giải pháp toàn diện cho ngành dược</p>
+    </div>
 
-      <form @submit.prevent="handleRegister" novalidate>
-        <!-- Họ tên -->
-        <div class="mb-3">
-          <label class="form-label d-flex align-items-center">
-            <i class="bi bi-person-fill text-primary me-2"></i> Họ tên
-          </label>
-          <input
-            v-model="hoTen"
-            type="text"
-            class="form-control rounded-pill"
-            placeholder="Nhập họ tên..."
-          />
+    <!-- Bên phải: form đăng ký -->
+    <div class="form-section d-flex flex-column justify-content-center align-items-center">
+      <div class="register-box w-100" style="max-width: 450px">
+        <div class="text-center mb-4">
+          <i class="bi bi-person-plus-fill text-success" style="font-size: 2.5rem"></i>
+          <h4 class="mt-2 text-success fw-bold">Đăng ký tài khoản</h4>
+          <p class="text-dark text-medium">Vui lòng điền đầy đủ thông tin để tạo tài khoản</p>
         </div>
 
-        <!-- Email -->
-        <div class="mb-3">
-          <label class="form-label d-flex align-items-center">
-            <i class="bi bi-envelope-fill text-danger me-2"></i> Email
-          </label>
-          <input
-            v-model="email"
-            type="email"
-            class="form-control rounded-pill"
-            placeholder="Nhập email..."
-          />
-        </div>
-
-        <!-- Mật khẩu -->
-        <div class="mb-3">
-          <label class="form-label d-flex align-items-center">
-            <i class="bi bi-lock-fill text-warning me-2"></i> Mật khẩu
-          </label>
-          <div class="input-group">
-            <input
-              :type="showPassword ? 'text' : 'password'"
-              v-model="password"
-              class="form-control rounded-start-pill border-end-0"
-              placeholder="Tối thiểu 6 ký tự"
-            />
-            <span
-              class="input-group-text bg-white border-start-0 rounded-end-pill"
-              style="cursor: pointer"
-              @click="showPassword = !showPassword"
-            >
-              <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-            </span>
+        <form @submit.prevent="handleRegister" novalidate>
+          <!-- Họ tên -->
+          <div class="mb-3">
+            <label class="form-label">Họ tên</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+              <input
+                v-model="hoTen"
+                type="text"
+                class="form-control"
+                placeholder="Nhập họ tên..."
+              />
+            </div>
           </div>
-        </div>
 
-        <!-- Xác nhận mật khẩu -->
-        <div class="mb-3">
-          <label class="form-label d-flex align-items-center">
-            <i class="bi bi-shield-lock-fill text-info me-2"></i> Xác nhận mật khẩu
-          </label>
-          <input
-            :type="showPassword ? 'text' : 'password'"
-            v-model="confirmPassword"
-            class="form-control rounded-pill"
-            placeholder="Nhập lại mật khẩu"
-          />
-        </div>
+          <!-- Email -->
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
+              <input
+                v-model="email"
+                type="email"
+                class="form-control"
+                placeholder="Nhập email..."
+              />
+            </div>
+          </div>
 
-        <!-- Thông báo lỗi -->
-        <div v-if="error" class="alert alert-danger d-flex align-items-center mt-3 py-2">
-          <i class="bi bi-exclamation-circle me-2"></i>
-          <span>{{ error }}</span>
-        </div>
+          <!-- Mật khẩu -->
+          <div class="mb-3">
+            <label class="form-label">Mật khẩu</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+              <input
+                :type="showPassword ? 'text' : 'password'"
+                v-model="password"
+                class="form-control"
+                placeholder="Tối thiểu 6 ký tự"
+              />
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="showPassword = !showPassword"
+              >
+                <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+              </button>
+            </div>
+          </div>
 
-        <!-- Nút đăng ký -->
-        <button type="submit" class="btn btn-success w-100 rounded-pill mt-3">
-          <i class="bi bi-check-circle me-2"></i> Đăng ký
-        </button>
-      </form>
+          <!-- Xác nhận mật khẩu -->
+          <div class="mb-3">
+            <label class="form-label">Xác nhận mật khẩu</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-shield-lock-fill"></i></span>
+              <input
+                :type="showPassword ? 'text' : 'password'"
+                v-model="confirmPassword"
+                class="form-control"
+                placeholder="Nhập lại mật khẩu"
+              />
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="showPassword = !showPassword"
+              >
+                <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+              </button>
+            </div>
+          </div>
 
-      <p class="text-center text-muted mt-3 small">
-        Đã có tài khoản?
-        <router-link to="/dang-nhap" class="text-decoration-none">Đăng nhập</router-link>
-      </p>
+          <!-- Thông báo lỗi -->
+          <div v-if="error" class="alert alert-danger text-center">{{ error }}</div>
+
+          <!-- Nút đăng ký -->
+          <button type="submit" class="btn btn-success w-100">Đăng ký</button>
+        </form>
+
+        <p class="text-center mt-3">
+          Đã có tài khoản?
+          <router-link to="/dang-nhap" class="fw-bold text-success text-decoration-none"
+            >Đăng nhập</router-link
+          >
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -138,18 +156,42 @@ function handleRegister() {
 </script>
 
 <style scoped>
-.register-container {
-  background: linear-gradient(to right, #e3f2fd, #e8f5e9);
-  padding: 40px 0;
+@import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css');
+
+.register-page {
+  display: flex;
+  height: 100vh;
 }
-.card {
-  border-radius: 20px;
+
+.intro-section {
+  background-image: url('https://images.pexels.com/photos/7615574/pexels-photo-7615574.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 50%;
+  padding: 40px;
+  color: white;
 }
-input.form-control:focus {
-  border-color: #2e7d32;
-  box-shadow: 0 0 0 0.2rem rgba(46, 125, 50, 0.25);
+
+.intro-section h1,
+.intro-section p {
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
 }
-.input-group-text {
-  height: 100%;
+
+.form-section {
+  width: 50%;
+  padding: 40px;
+  background-color: #ffffff;
+}
+
+.register-box {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.text-medium {
+  font-weight: 500;
 }
 </style>
