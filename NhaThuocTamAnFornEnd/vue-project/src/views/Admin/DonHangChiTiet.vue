@@ -49,7 +49,7 @@
     <!-- Tổng tiền + ghi chú -->
     <div class="mt-3">
       <div class="fw-bold fs-5 text-danger">
-        Tổng thanh toán: {{ formatMoney(donHang.thanhToan) }}
+        Tổng thanh toán: {{ donHang.daThanhToan ? formatMoney(0) : formatMoney(donHang.thanhToan) }}
       </div>
     </div>
 
@@ -62,7 +62,7 @@
     <div class="mt-2">
       <strong>Hình thức thanh toán:</strong>
       {{
-        donHang.hinhThucThanhToan === 'cod' ? 'Thanh toán khi nhận hàng' : 'Đã thanh toán Online'
+        donHang.hinhThucThanhToan === 'online' ? 'Đã thanh toán Online' : 'Thanh toán khi nhận hàng'
       }}
     </div>
 

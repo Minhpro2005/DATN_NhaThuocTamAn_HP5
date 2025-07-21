@@ -362,7 +362,15 @@ const loadData = async () => {
   ])
   nhaCungCaps.value = ncc.data
   dsThuoc.value = thuoc.data
-  dsBienThe.value = bienThe.data
+
+  // Thêm tên hiển thị đầy đủ cho biến thể
+  dsBienThe.value = bienThe.data.map((bt) => ({
+    ...bt,
+    tenThuocFull:
+      bt.tenThuoc && bt.tenBienThe
+        ? `${bt.tenThuoc} - ${bt.tenBienThe}`
+        : bt.tenBienThe || 'Biến thể',
+  }))
 }
 
 onMounted(() => {

@@ -67,6 +67,9 @@
             <input v-model="form.phone" class="form-control" placeholder="SĐT" />
           </div>
           <div class="col-12">
+            <input v-model="form.email" type="email" class="form-control" placeholder="Email" />
+          </div>
+          <div class="col-12">
             <input v-model="form.address" class="form-control" placeholder="Địa chỉ nhận hàng" />
           </div>
         </div>
@@ -154,7 +157,7 @@ import { useRouter } from 'vue-router'
 import CartStore from './CartStore'
 
 const router = useRouter()
-const form = ref({ name: '', phone: '', address: '', payment: 'cod', note: '' })
+const form = ref({ name: '', phone: '', address: '', email: '', payment: 'cod', note: '' })
 
 const userInfo = ref(JSON.parse(localStorage.getItem('userInfo') || '{}'))
 const storageKey = ref(userInfo.value?.maKH ? `cart_${userInfo.value.maKH}` : 'cart_temp')
@@ -165,12 +168,21 @@ const selectedCode = ref('')
 const appliedVoucher = ref(null)
 const showVoucherModal = ref(false)
 
-onMounted(() => {
+onMounted(async () => {
   cartItems.value = JSON.parse(localStorage.getItem('selectedItems')) || []
-  if (userInfo.value?.hoTen) {
-    form.value.name = userInfo.value.hoTen
-    form.value.phone = userInfo.value.soDienThoai
-    form.value.address = userInfo.value.diaChi
+
+  const khachHangId = userInfo.value?.maKH
+  if (khachHangId) {
+    try {
+      const res = await axios.get(`http://localhost:8080/api/khachhang/${khachHangId}`)
+      const fullInfo = res.data
+      form.value.name = fullInfo.hoTen
+      form.value.phone = fullInfo.soDienThoai
+      form.value.address = fullInfo.diaChi
+      form.value.email = fullInfo.email
+    } catch (err) {
+      console.error('Lỗi lấy thông tin KH:', err)
+    }
   }
 
   axios
@@ -243,6 +255,7 @@ function datHang() {
     diaChiNhan: form.value.address,
     soDienThoaiNhan: form.value.phone,
     hoTenNguoiNhan: form.value.name,
+    emailNguoiNhan: form.value.email,
     hinhThucThanhToan: form.value.payment,
     ghiChu: form.value.note,
     chiTiet: cartItems.value.map((sp) => ({

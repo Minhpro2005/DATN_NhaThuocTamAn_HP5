@@ -29,8 +29,9 @@
               <tr>
                 <th>Ảnh</th>
                 <th>Sản phẩm</th>
-                <th>SL</th>
                 <th>Đơn giá</th>
+                <th>SL</th>
+                <th>Thành tiền</th>
               </tr>
             </thead>
             <tbody>
@@ -44,8 +45,9 @@
                   />
                 </td>
                 <td>{{ ct.tenThuoc || '---' }}</td>
-                <td>{{ ct.soLuong }}</td>
                 <td>{{ formatMoney(ct.donGia) }}</td>
+                <td>{{ ct.soLuong }}</td>
+                <td>{{ formatMoney(ct.donGia * ct.soLuong) }}</td>
               </tr>
             </tbody>
           </table>
