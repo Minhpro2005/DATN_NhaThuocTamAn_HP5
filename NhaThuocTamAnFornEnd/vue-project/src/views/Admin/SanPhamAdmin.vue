@@ -189,14 +189,18 @@
     </div>
 
     <ThuocChiTiet :thuoc="chiTietThuoc" :show="showChiTiet" @close="showChiTiet = false" />
+    <ToastMessage ref="toast" />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import ThuocChiTiet from './ThuocChiTiet.vue'
 import { useRouter } from 'vue-router'
+import ThuocChiTiet from './ThuocChiTiet.vue'
+import ToastMessage from '../ToastMessage.vue'
+
 const router = useRouter()
+const toast = ref(null)
 
 const danhSachSP = ref([])
 const danhSachDanhMuc = ref([])
@@ -242,32 +246,31 @@ function moChiTiet(sp) {
 }
 
 function openModal(sp = null) {
-  if (sp) {
-    form.value = { ...sp }
-  } else {
-    form.value = {
-      tenThuoc: '',
-      congDung: '',
-      moTaThem: '',
-      huongDanSuDung: '',
-      donViTinh: '',
-      dangBaoChe: '',
-      quyCach: '',
-      thanhPhan: '',
-      hanSuDung: '',
-      ngaySanXuat: '',
-      xuatXu: '',
-      giaBan: '',
-      maDM: '',
-      maNCC: '',
-      trangThai: true,
-    }
-  }
+  form.value = sp
+    ? { ...sp }
+    : {
+        tenThuoc: '',
+        congDung: '',
+        moTaThem: '',
+        huongDanSuDung: '',
+        donViTinh: '',
+        dangBaoChe: '',
+        quyCach: '',
+        thanhPhan: '',
+        hanSuDung: '',
+        ngaySanXuat: '',
+        xuatXu: '',
+        giaBan: '',
+        maDM: '',
+        maNCC: '',
+        trangThai: true,
+      }
   showModal.value = true
 }
 
 function closeModal() {
   showModal.value = false
+  form.value = {}
 }
 
 function luuThuoc() {
@@ -288,16 +291,27 @@ function luuThuoc() {
     .then(() => {
       fetchThuoc()
       closeModal()
+      toast.value.show(
+        isUpdate ? '✅ Cập nhật thuốc thành công!' : '✅ Thêm thuốc thành công!',
+        'success',
+      )
     })
     .catch((err) => {
-      alert('❌ Lỗi lưu thuốc: ' + err.message)
+      toast.value.show('❌ Lỗi lưu thuốc: ' + err.message, 'error')
     })
 }
 
 function xoaThuoc(id) {
-  if (confirm('Bạn có chắc muốn xóa thuốc này?')) {
-    fetch(`http://localhost:8080/api/thuoc/${id}`, { method: 'DELETE' }).then(() => fetchThuoc())
-  }
+  if (!window.confirm('Bạn có chắc muốn xóa thuốc này?')) return
+  fetch(`http://localhost:8080/api/thuoc/${id}`, { method: 'DELETE' })
+    .then((res) => {
+      if (!res.ok) throw new Error('Xóa thất bại')
+      fetchThuoc()
+      toast.value.show('🗑️ Đã xóa thuốc thành công!', 'success')
+    })
+    .catch((err) => {
+      toast.value.show('❌ Lỗi xóa thuốc: ' + err.message, 'error')
+    })
 }
 
 watch(filter, fetchThuoc, { deep: true })
