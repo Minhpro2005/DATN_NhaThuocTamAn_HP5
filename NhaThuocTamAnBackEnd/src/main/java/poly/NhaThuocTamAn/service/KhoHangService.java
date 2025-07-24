@@ -5,7 +5,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import poly.NhaThuocTamAn.model.BienTheThuoc;
 import poly.NhaThuocTamAn.model.KhoHang;
+import poly.NhaThuocTamAn.model.Thuoc;
 import poly.NhaThuocTamAn.repository.KhoHangRepository;
 
 @Service
@@ -27,5 +29,10 @@ public class KhoHangService {
 	
 	public KhoHang update(Integer maKhoHang, KhoHang kho) {
 		return khorep.save(kho);
+	}
+
+	public void themHoacCapNhat(Thuoc thuoc, BienTheThuoc bienThe, Integer soLuong) {
+		// TODO Auto-generated method stub
+		
 	}
 }

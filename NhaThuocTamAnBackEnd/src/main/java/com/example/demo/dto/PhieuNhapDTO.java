@@ -23,6 +23,22 @@ public class PhieuNhapDTO {
         private Integer maThuoc;
         private Integer soLuong;
         private BigDecimal donGiaNhap;
+		public Object getMaThuoc() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		public Object getMaBienThe() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		public Integer getSoLuong() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		public Double getDonGiaNhap() {
+			// TODO Auto-generated method stub
+			return null;
+		}
     }
 
 	public PhieuNhapDTO() {

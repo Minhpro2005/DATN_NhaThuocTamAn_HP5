@@ -1,5 +1,6 @@
 package poly.NhaThuocTamAn.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
@@ -38,14 +39,14 @@ public class PhieuNhap {
 	@JoinColumn(name="maNCC", table="NhaCungCap")
 	private NhaCungCap maNCC;
 	
-	private Double tongTien;
+	private BigDecimal tongTien;
 
 	public PhieuNhap() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public PhieuNhap(Integer maPN, LocalDateTime ngayNhap, NhanVien maNV, NhaCungCap maNCC, Double tongTien) {
+	public PhieuNhap(Integer maPN, LocalDateTime ngayNhap, NhanVien maNV, NhaCungCap maNCC, BigDecimal tongTien) {
 		super();
 		this.maPN = maPN;
 		this.ngayNhap = ngayNhap;
@@ -86,12 +87,22 @@ public class PhieuNhap {
 		this.maNCC = maNCC;
 	}
 
-	public Double getTongTien() {
+	public BigDecimal getTongTien() {
 		return tongTien;
 	}
 
-	public void setTongTien(Double tongTien) {
-		this.tongTien = tongTien;
+	public void setTongTien(BigDecimal zero) {
+		this.tongTien = zero;
+	}
+
+	public void setNhanVien(NhanVien nv) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setNhaCungCap(NhaCungCap ncc) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	

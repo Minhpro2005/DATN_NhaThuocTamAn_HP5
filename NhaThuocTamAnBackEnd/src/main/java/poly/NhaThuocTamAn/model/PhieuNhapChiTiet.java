@@ -90,4 +90,19 @@ public class PhieuNhapChiTiet {
 		this.donGiaNhap = donGiaNhap;
 	}
 
+	public void setBienTheThuoc(BienTheThuoc bienThe) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setPhieuNhap(PhieuNhap pn) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setThuoc(Thuoc thuoc) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
