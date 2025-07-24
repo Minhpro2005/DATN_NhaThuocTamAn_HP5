@@ -50,6 +50,8 @@ import NhanVienAdmin from '@/views/Admin/NhanVienAdmin.vue'
 import KhachHangAdmin from '@/views/Admin/KhachHangAdmin.vue'
 import SoSanh from '@/views/User/SoSanh.vue'
 import DatHangTaiQuay from '@/views/Admin/DatHangTaiQuay.vue'
+import TraCuuDonHang from '@/views/User/TraCuuDonHang.vue'
+import DatHangThatBai from '@/views/User/DatHangThatBai.vue'
 
 const routes = [
   { path: '/', redirect: '/home' },
@@ -71,7 +73,9 @@ const routes = [
   { path: '/danh-gia', name: 'danh-gia', component: DanhGia },
   { path: '/goi-y-mua-thuoc-theo-trieu-trung', component: TrieuChungGoiYThuoc },
   { path: '/so-sanh', name: 'so-sanh', component: SoSanh },
-   { path: 'dat-hang-tai-quay', component: DatHangTaiQuay },
+  { path: 'dat-hang-tai-quay', component: DatHangTaiQuay },
+  { path: '/tra-cuu-don-hang', name: 'tra-cuu-don-hang', component: TraCuuDonHang },
+  { path: '/dat-hang-that-bai', name: 'dat-hang-that-bai', component: DatHangThatBai },
 
   {
     path: '/tai-khoan',

@@ -7,9 +7,13 @@
       <h3 class="fw-bold mb-3">Đặt hàng thành công!</h3>
       <p class="text-muted">Cảm ơn bạn đã mua hàng tại cửa hàng của chúng tôi.</p>
       <div class="d-flex justify-content-center gap-3 mt-4">
-        <router-link to="/tai-khoan/don-hang-cua-ban" class="btn btn-outline-primary">
+        <router-link
+          :to="isGuest ? `/tra-cuu-don-hang?ma=${guestOrderCode}` : '/tai-khoan/don-hang-cua-ban'"
+          class="btn btn-outline-primary"
+        >
           <i class="bi bi-card-list me-1"></i> Xem đơn hàng
         </router-link>
+
         <router-link to="/" class="btn btn-success">
           <i class="bi bi-house-door me-1"></i> Tiếp tục mua sắm
         </router-link>
@@ -19,7 +23,16 @@
 </template>
 
 <script setup>
-// Bạn có thể nhận thông tin đơn hàng từ route params hoặc store nếu muốn hiển thị chi tiết
+import { ref, onMounted } from 'vue'
+
+const guestOrderCode = ref(null)
+const isGuest = ref(false)
+
+onMounted(() => {
+  guestOrderCode.value = localStorage.getItem('guestOrderCode')
+  const userInfo = localStorage.getItem('userInfo')
+  isGuest.value = !userInfo || userInfo === '{}' // Nếu chưa login => true
+})
 </script>
 
 <style scoped>
