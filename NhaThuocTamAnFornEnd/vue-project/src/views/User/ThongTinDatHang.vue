@@ -193,7 +193,8 @@ onMounted(async () => {
 
 const paymentMethods = [
   { value: 'cod', label: 'Thanh toán khi nhận hàng (COD)' },
-  { value: 'online', label: 'Thanh toán MoMo (Online)' },
+  { value: 'momo', label: 'Thanh toán MoMo' },
+  { value: 'vnpay', label: 'Thanh toán VNPay' },
 ]
 
 const tongTienGoc = computed(() =>
@@ -256,55 +257,76 @@ function datHang() {
     soDienThoaiNhan: form.value.phone,
     hoTenNguoiNhan: form.value.name,
     emailNguoiNhan: form.value.email,
-    hinhThucThanhToan: form.value.payment,
     ghiChu: form.value.note,
+    hinhThucThanhToan: form.value.payment,
+    daThanhToan: form.value.payment !== 'cod',
+
     chiTiet: cartItems.value.map((sp) => ({
       maThuoc: sp.maThuoc || null,
       maBienThe: sp.maBienThe || null,
       soLuong: sp.soLuong,
-      donGia: sp.giaBan,
+      donGia: Number(sp.giaBan),
     })),
   }
 
-  axios
-    .post('http://localhost:8080/api/donhang/create', dto)
-    .then((res) => {
-      const maDonHang = res.data?.maDonHang
-      const tongTien = totalAfterDiscount.value
+  const tongTien = totalAfterDiscount.value
 
-      // ✅ Xoá sản phẩm đã đặt khỏi giỏ hàng chính
-      const allCart = JSON.parse(localStorage.getItem(storageKey.value) || '[]')
-      const remaining = allCart.filter(
-        (item) =>
-          !cartItems.value.some(
-            (sp) =>
-              sp.maThuoc === item.maThuoc && (sp.maBienThe || null) === (item.maBienThe || null),
-          ),
-      )
-      localStorage.setItem(storageKey.value, JSON.stringify(remaining))
-      localStorage.removeItem('selectedItems')
-      CartStore.updateCount()
+  // 👉 Nếu là COD → tạo đơn hàng trực tiếp
+  if (form.value.payment === 'cod') {
+    axios
+      .post('http://localhost:8080/api/donhang/create', dto)
+      .then((res) => {
+        const maDonHang = res.data?.maDonHang
 
-      if (form.value.payment === 'online') {
-        axios
-          .get('http://localhost:8080/api/thanh-toan/momo', {
-            params: { orderId: maDonHang, amount: tongTien },
-          })
-          .then((res2) => {
-            if (res2.data.success) {
-              window.location.href = res2.data.payUrl
-            } else {
-              alert('❌ Lỗi tạo URL thanh toán: ' + res2.data.error)
-            }
-          })
-      } else {
+        // Xóa giỏ hàng
+        const allCart = JSON.parse(localStorage.getItem(storageKey.value) || '[]')
+        const remaining = allCart.filter(
+          (item) =>
+            !cartItems.value.some(
+              (sp) =>
+                sp.maThuoc === item.maThuoc && (sp.maBienThe || null) === (item.maBienThe || null),
+            ),
+        )
+        localStorage.setItem(storageKey.value, JSON.stringify(remaining))
+        localStorage.removeItem('selectedItems')
+        CartStore.updateCount()
+
         alert('✅ Đặt hàng thành công (COD)!')
+        if (!userInfo.value?.maKH) localStorage.setItem('guestOrderCode', maDonHang)
         router.push('/dat-hang-thanh-cong')
+      })
+      .catch((err) => {
+        console.error('❌ Lỗi tạo đơn hàng COD:', err)
+        alert('❌ Không thể tạo đơn hàng!')
+      })
+
+    return
+  }
+
+  // 👉 Nếu là VNPAY hoặc MOMO → lấy URL thanh toán
+  const apiUrl =
+    form.value.payment === 'vnpay'
+      ? 'http://localhost:8080/api/thanh-toan/vnpay'
+      : 'http://localhost:8080/api/thanh-toan/momo'
+
+  // ❗ GỬI ĐÚNG DẠNG { donHangDTO: ..., tongTien: ... }
+  axios
+    .post(apiUrl, {
+      donHangDTO: dto,
+      tongTien: tongTien,
+    })
+    .then((res) => {
+      const paymentUrl = form.value.payment === 'vnpay' ? res.data.paymentUrl : res.data.payUrl
+
+      if (paymentUrl) {
+        window.location.href = paymentUrl
+      } else {
+        alert('❌ Không thể tạo URL thanh toán!')
       }
     })
     .catch((err) => {
-      console.error('❌ Lỗi tạo đơn hàng:', err)
-      alert('❌ Không thể tạo đơn hàng!')
+      console.error('❌ Lỗi tạo URL thanh toán:', err)
+      alert('❌ Không thể khởi tạo thanh toán!')
     })
 }
 </script>
