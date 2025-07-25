@@ -36,7 +36,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="bt in bienTheLoc" :key="bt.maBienThe">
+            <tr v-for="bt in bienTheTrang" :key="bt.maBienThe">
               <td>{{ bt.maThuoc }}</td>
               <td>{{ bt.maBienThe }}</td>
               <td>{{ bt.tenBienThe }}</td>
@@ -130,18 +130,39 @@
         </div>
       </div>
     </template>
+    <!-- Phân trang -->
+    <Pagination :current-page="currentPage" :total-pages="totalPages" @change-page="changePage" />
+
+    <!-- Toast -->
+    <ToastMessage ref="toastRef" />
   </div>
 </template>
 
 <script setup>
 import axios from 'axios'
 import { ref, onMounted, computed } from 'vue'
+import ToastMessage from '../ToastMessage.vue'
+import Pagination from '../Pagination.vue'
 
 const bienTheList = ref([])
 const form = ref({})
 const showModal = ref(false)
 const maThuocFilter = ref('')
 const fileAnh = ref(null)
+const toastRef = ref(null)
+
+const currentPage = ref(1)
+const pageSize = 5 // Số dòng trên mỗi trang
+const totalPages = computed(() => Math.ceil(bienTheLoc.value.length / pageSize))
+
+const bienTheTrang = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return bienTheLoc.value.slice(start, start + pageSize)
+})
+
+function changePage(page) {
+  currentPage.value = page
+}
 
 onMounted(fetchData)
 
@@ -151,7 +172,7 @@ async function fetchData() {
     bienTheList.value = Array.isArray(res.data) ? res.data : []
   } catch (err) {
     console.error('Lỗi fetch biến thể:', err)
-    bienTheList.value = []
+    toastRef.value.show('❌ Lỗi khi tải danh sách biến thể.', 'error')
   }
 }
 
@@ -195,24 +216,32 @@ async function luuBienThe() {
       await axios.put(`http://localhost:8080/api/bienthe/${form.value.maBienThe}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
+      toastRef.value.show('✅ Cập nhật biến thể thành công!', 'success')
     } else {
       await axios.post('http://localhost:8080/api/bienthe', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
+      toastRef.value.show('✅ Thêm biến thể thành công!', 'success')
     }
 
     await fetchData()
     closeModal()
   } catch (err) {
     console.error('Lỗi lưu:', err)
-    alert('Lỗi khi lưu biến thể thuốc.')
+    toastRef.value.show('❌ Lỗi khi lưu biến thể thuốc.', 'error')
   }
 }
 
 async function xoaBienThe(id) {
-  if (confirm('Xóa biến thể này?')) {
-    await axios.delete(`http://localhost:8080/api/bienthe/${id}`)
-    await fetchData()
+  if (confirm('Bạn có chắc muốn xóa biến thể này?')) {
+    try {
+      await axios.delete(`http://localhost:8080/api/bienthe/${id}`)
+      await fetchData()
+      toastRef.value.show('🗑️ Đã xóa biến thể thành công.', 'success')
+    } catch (err) {
+      console.error('Lỗi xóa:', err)
+      toastRef.value.show('❌ Xóa biến thể thất bại.', 'error')
+    }
   }
 }
 

@@ -4,42 +4,21 @@
       <i class="bi bi-people-fill me-2"></i> Quản lý khách hàng
     </h4>
 
-    <!-- Bộ lọc tìm kiếm -->
-    <div class="card shadow-sm mb-4 border-0">
-      <div class="card-body">
-        <div class="row g-3">
-          <div class="col-md-3">
-            <input
-              v-model="filter.ten"
-              type="text"
-              class="form-control"
-              placeholder="🔎 Họ tên..."
-            />
-          </div>
-          <div class="col-md-3">
-            <input
-              v-model="filter.email"
-              type="text"
-              class="form-control"
-              placeholder="📧 Email..."
-            />
-          </div>
-          <div class="col-md-3">
-            <input v-model="filter.sdt" type="text" class="form-control" placeholder="📞 SĐT..." />
-          </div>
-          <div class="col-md-3">
-            <input
-              v-model="filter.diaChi"
-              type="text"
-              class="form-control"
-              placeholder="🏠 Địa chỉ..."
-            />
-          </div>
-        </div>
+    <!-- Thanh tìm kiếm -->
+    <div class="mb-4">
+      <div class="input-group w-100">
+        <span class="input-group-text bg-white border-0">🔎</span>
+        <input
+          v-model="keyword"
+          type="text"
+          class="form-control border-0 shadow-none focus-border"
+          placeholder="Tìm kiếm khách hàng theo tên, email, SĐT..."
+        />
+        <button class="btn btn-outline-secondary" @click="clearSearch">Xóa</button>
       </div>
     </div>
 
-    <!-- Bảng dữ liệu khách hàng -->
+    <!-- Bảng dữ liệu -->
     <div class="table-responsive rounded shadow-sm border">
       <table class="table table-bordered table-hover text-center bg-white mb-0">
         <thead class="table-success">
@@ -78,24 +57,19 @@
             </td>
             <td>
               <img
-                :src="kh.hinhAnh || defaultAvatar"
+                :src="getFullImageUrl(kh.hinhAnh)"
                 class="rounded-circle border"
                 style="width: 48px; height: 48px; object-fit: cover"
               />
             </td>
             <td>
-              <div class="d-flex justify-content-center gap-1 flex-wrap">
-                <button class="btn btn-sm btn-outline-info" @click="xemLichSu(kh)">
-                  🕓Lịch sử
-                </button>
-                <button
-                  class="btn btn-sm"
-                  :class="kh.trangThai ? 'btn-outline-danger' : 'btn-outline-success'"
-                  @click="toggleTrangThai(kh.maKH)"
-                >
-                  {{ kh.trangThai ? 'Khoá' : 'Mở' }}
-                </button>
-              </div>
+              <button
+                class="btn btn-sm"
+                :class="kh.trangThai ? 'btn-outline-danger' : 'btn-outline-success'"
+                @click="toggleTrangThai(kh.maKH)"
+              >
+                {{ kh.trangThai ? 'Khoá' : 'Mở' }}
+              </button>
             </td>
           </tr>
         </tbody>
@@ -104,9 +78,9 @@
 
     <!-- Phân trang -->
     <div class="d-flex justify-content-between align-items-center mt-3">
-      <small class="text-muted">
-        Hiển thị {{ pagedData.length }} / {{ khachHangLoc.length }} khách hàng
-      </small>
+      <small class="text-muted"
+        >Hiển thị {{ pagedData.length }} / {{ khachHangLoc.length }} khách hàng</small
+      >
       <ul class="pagination pagination-sm mb-0">
         <li class="page-item" :class="{ disabled: currentPage === 1 }">
           <button class="page-link" @click="currentPage--">«</button>
@@ -124,46 +98,71 @@
         </li>
       </ul>
     </div>
+
+    <!-- Toast -->
+    <ToastMessage ref="toastRef" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import axios from 'axios'
-import { useRouter } from 'vue-router'
+import ToastMessage from '../ToastMessage.vue'
 
-const router = useRouter()
-const khachHangList = ref([])
-const filter = ref({ ten: '', email: '', sdt: '', diaChi: '' })
-const currentPage = ref(1)
-const pageSize = 20
+const serverUrl = 'http://localhost:8080'
 const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'
 
-// Load dữ liệu lần đầu
+const khachHangList = ref([])
+const keyword = ref('')
+const currentPage = ref(1)
+const pageSize = 20
+let searchTimeout = null
+const toastRef = ref(null)
+
 onMounted(() => {
   taiDanhSach()
 })
 
-// API lấy danh sách khách hàng
 function taiDanhSach() {
   axios
-    .get('http://localhost:8080/api/khachhang')
-    .then((res) => (khachHangList.value = res.data))
-    .catch((err) => console.error('Lỗi tải danh sách:', err))
+    .get(`${serverUrl}/api/khachhang`)
+    .then((res) => {
+      khachHangList.value = res.data
+      currentPage.value = 1
+    })
+    .catch(() => toastRef.value.show('❌ Lỗi khi tải danh sách khách hàng!', 'error'))
 }
 
-// Tự động tìm kiếm khi filter thay đổi
-watch(
-  filter,
-  () => {
-    currentPage.value = 1
+watch(keyword, () => {
+  currentPage.value = 1
+  if (searchTimeout) clearTimeout(searchTimeout)
+
+  searchTimeout = setTimeout(() => {
     axios
-      .get('http://localhost:8080/api/khachhang/search', { params: filter.value })
-      .then((res) => (khachHangList.value = res.data))
-      .catch((err) => console.error('Lỗi tìm kiếm:', err))
-  },
-  { deep: true },
-)
+      .get(`${serverUrl}/api/khachhang/search`, {
+        params: {
+          hoTen: keyword.value,
+          email: null,
+          sdt: null,
+          diaChi: null,
+        },
+      })
+      .then((res) => {
+        khachHangList.value = res.data
+        currentPage.value = 1
+      })
+      .catch(() => toastRef.value.show('❌ Lỗi tìm kiếm!', 'error'))
+  }, 400)
+})
+
+function clearSearch() {
+  keyword.value = ''
+  taiDanhSach()
+}
+
+function getFullImageUrl(path) {
+  return path ? `${serverUrl}${path}` : defaultAvatar
+}
 
 const khachHangLoc = computed(() => khachHangList.value)
 const totalPages = computed(() => Math.ceil(khachHangLoc.value.length / pageSize))
@@ -172,20 +171,17 @@ const pagedData = computed(() => {
   return khachHangLoc.value.slice(start, start + pageSize)
 })
 
-// Xử lý khoá mở tài khoản
 function toggleTrangThai(maKH) {
   const kh = khachHangList.value.find((k) => k.maKH === maKH)
   if (!kh) return
   const newStatus = kh.trangThai ? 0 : 1
   axios
-    .put(`http://localhost:8080/api/khachhang/trang-thai/${maKH}?status=${newStatus}`)
-    .then((res) => (kh.trangThai = res.data.trangThai))
-    .catch((err) => console.error('Lỗi cập nhật trạng thái:', err))
-}
-
-// Xem lịch sử mua hàng theo maKH
-function xemLichSu(kh) {
-  router.push(`/lich-su-mua-hang/${kh.maKH}`)
+    .put(`${serverUrl}/api/khachhang/trang-thai/${maKH}?status=${newStatus}`)
+    .then((res) => {
+      kh.trangThai = res.data.trangThai
+      toastRef.value.show('✅ Cập nhật trạng thái thành công!', 'success')
+    })
+    .catch(() => toastRef.value.show('❌ Lỗi cập nhật trạng thái!', 'error'))
 }
 </script>
 
@@ -199,6 +195,20 @@ function xemLichSu(kh) {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+}
+.input-group-text {
+  background-color: #f8f9fa;
+  border-radius: 0.375rem 0 0 0.375rem;
+  font-size: 1.1rem;
+}
+input::placeholder {
+  font-style: italic;
+  color: #999;
+}
+.focus-border:focus {
+  border: 1px solid #198754 !important;
+  box-shadow: none !important;
+  outline: none;
 }
 .btn-sm {
   font-size: 13px;
