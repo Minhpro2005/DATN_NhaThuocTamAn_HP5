@@ -50,7 +50,7 @@ public class DonHang {
 	@Column(length=50)
 	private String hinhThucThanhToan;
 	
-	private Boolean daThanhToan;
+	private boolean daThanhToan;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	private LocalDateTime ngayThanhToan;
@@ -68,7 +68,7 @@ public class DonHang {
 	}
 
 	public DonHang(Integer maDonHang, KhachHang maKH, NhanVien maNV, LocalDateTime ngayDat, Integer trangThai,
-			Double tongTien, Double giamGia, Double thanhToan, String hinhThucThanhToan, Boolean daThanhToan,
+			Double tongTien, Double giamGia, Double thanhToan, String hinhThucThanhToan, boolean daThanhToan,
 			LocalDateTime ngayThanhToan, String diaChiNhan, String soDienThoaiNhan, String ghiChu) {
 		super();
 		this.maDonHang = maDonHang;
@@ -159,11 +159,11 @@ public class DonHang {
 		this.hinhThucThanhToan = hinhThucThanhToan;
 	}
 
-	public Boolean getDaThanhToan() {
+	public boolean getDaThanhToan() {
 		return daThanhToan;
 	}
 
-	public void setDaThanhToan(Boolean daThanhToan) {
+	public void setDaThanhToan(boolean daThanhToan) {
 		this.daThanhToan = daThanhToan;
 	}
 

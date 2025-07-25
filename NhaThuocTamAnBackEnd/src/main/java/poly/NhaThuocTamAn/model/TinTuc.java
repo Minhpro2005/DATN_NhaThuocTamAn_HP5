@@ -41,7 +41,7 @@ public class TinTuc {
 	@Column(length = 100)
 	private String hinhAnh;
 	
-	private Boolean trangThai;
+	private boolean trangThai;
 
 	public TinTuc() {
 		super();
@@ -49,7 +49,7 @@ public class TinTuc {
 	}
 
 	public TinTuc(Integer maTin, String tieuDe, String moTa, String noiDung, Date ngayDang, String tacGia,
-			String hinhAnh, Boolean trangThai) {
+			String hinhAnh, boolean trangThai) {
 		super();
 		this.maTin = maTin;
 		this.tieuDe = tieuDe;
@@ -117,11 +117,11 @@ public class TinTuc {
 		this.hinhAnh = hinhAnh;
 	}
 
-	public Boolean getTrangThai() {
+	public boolean getTrangThai() {
 		return trangThai;
 	}
 
-	public void setTrangThai(Boolean trangThai) {
+	public void setTrangThai(boolean trangThai) {
 		this.trangThai = trangThai;
 	}
 	

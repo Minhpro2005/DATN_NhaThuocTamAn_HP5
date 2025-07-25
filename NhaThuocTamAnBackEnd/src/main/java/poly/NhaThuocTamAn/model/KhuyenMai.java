@@ -42,10 +42,10 @@ public class KhuyenMai {
 	
 	private String moTa;
 	
-	private Boolean trangThai;
+	private boolean trangThai;
 
 	public KhuyenMai(Integer maKM, String tenKM, String loaiKM, Double giaTri, Date ngayBatDau, Date ngayKetThuc,
-			String moTa, Boolean trangThai) {
+			String moTa, boolean trangThai) {
 		super();
 		this.maKM = maKM;
 		this.tenKM = tenKM;
@@ -118,11 +118,11 @@ public class KhuyenMai {
 		this.moTa = moTa;
 	}
 
-	public Boolean getTrangThai() {
+	public boolean getTrangThai() {
 		return trangThai;
 	}
 
-	public void setTrangThai(Boolean trangThai) {
+	public void setTrangThai(boolean trangThai) {
 		this.trangThai = trangThai;
 	}
 	

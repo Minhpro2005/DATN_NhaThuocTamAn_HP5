@@ -43,7 +43,7 @@ public class NhanVien {
 	@Temporal(TemporalType.DATE)
 	private Date ngaySinh;
 	
-	private Boolean gioiTinh;
+	private boolean gioiTinh;
 	
 	private String diaChi;
 	
@@ -52,10 +52,10 @@ public class NhanVien {
 	@Column(nullable = false)
 	private Integer vaiTro;
 	
-	private Boolean trangThai;
+	private boolean trangThai;
 
 	public NhanVien(Integer maNV, String matKhau, String hoTen, String email, String soDienThoai, String cccd,
-			Date ngaySinh, Boolean gioiTinh, String diaChi, String hinhAnh, Integer vaiTro, Boolean trangThai) {
+			Date ngaySinh, boolean gioiTinh, String diaChi, String hinhAnh, Integer vaiTro, boolean trangThai) {
 		super();
 		this.maNV = maNV;
 		this.matKhau = matKhau;
@@ -132,11 +132,11 @@ public class NhanVien {
 		this.ngaySinh = ngaySinh;
 	}
 
-	public Boolean getGioiTinh() {
+	public boolean getGioiTinh() {
 		return gioiTinh;
 	}
 
-	public void setGioiTinh(Boolean gioiTinh) {
+	public void setGioiTinh(boolean gioiTinh) {
 		this.gioiTinh = gioiTinh;
 	}
 
@@ -164,11 +164,11 @@ public class NhanVien {
 		this.vaiTro = vaiTro;
 	}
 
-	public Boolean getTrangThai() {
+	public boolean getTrangThai() {
 		return trangThai;
 	}
 
-	public void setTrangThai(Boolean trangThai) {
+	public void setTrangThai(boolean trangThai) {
 		this.trangThai = trangThai;
 	}
 	

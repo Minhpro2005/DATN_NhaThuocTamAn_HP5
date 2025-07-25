@@ -57,7 +57,7 @@ public class Thuoc {
 	
 	private String huongDanSuDung;
 	
-	private Boolean trangThai;
+	private boolean trangThai;
 	
 	@ManyToOne
 	@JoinColumn(name = "maDM", table = "DanhMuc")
@@ -74,7 +74,7 @@ public class Thuoc {
 
 	public Thuoc(Integer maThuoc, String tenThuoc, String hoatChat, String congDung, String donViTinh, Double giaNhap,
 			Double giaBan, Date hanSuDung, String xuatXu, Date ngaySanXuat, String moTaThem, String donViQuyDoi,
-			String huongDanSuDung, Boolean trangThai, DanhMuc maDM, NhaCungCap maNCC) {
+			String huongDanSuDung, boolean trangThai, DanhMuc maDM, NhaCungCap maNCC) {
 		super();
 		this.maThuoc = maThuoc;
 		this.tenThuoc = tenThuoc;
@@ -198,11 +198,11 @@ public class Thuoc {
 		this.huongDanSuDung = huongDanSuDung;
 	}
 
-	public Boolean getTrangThai() {
+	public boolean getTrangThai() {
 		return trangThai;
 	}
 
-	public void setTrangThai(Boolean trangThai) {
+	public void setTrangThai(boolean trangThai) {
 		this.trangThai = trangThai;
 	}
 

@@ -5,11 +5,14 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.demo.dto.PhieuNhapDTO;
 import poly.NhaThuocTamAn.model.PhieuNhap;
+import poly.NhaThuocTamAn.model.PhieuNhapChiTiet;
 import poly.NhaThuocTamAn.service.PhieuNhapService;
 
 @RestController
 @RequestMapping("/api/phieu-nhap")
+@CrossOrigin("*")
 public class PhieuNhapController {
 	@Autowired
 	private PhieuNhapService pnsrv;
@@ -20,28 +23,15 @@ public class PhieuNhapController {
 		return pnsrv.getAll();
 	}
 	
-	//Get by ID
-	@GetMapping("/{maPN}")
-	public PhieuNhap getById(@PathVariable Integer maPN) {
-		return pnsrv.getById(maPN);
+	//Get detail
+	@GetMapping("/{maPN}/chi-tiet")
+	public List<PhieuNhapChiTiet> getChiTiet(@PathVariable Integer maPN) {
+		return pnsrv.getChiTietByPhieuNhap(maPN);
 	}
 	
 	//Add
 	@PostMapping
-	public PhieuNhap add(@RequestBody PhieuNhap pn) {
-		return pnsrv.add(pn);
-	}
-	
-	//Update
-	@PutMapping("/{maPN}")
-	public PhieuNhap update(@PathVariable Integer maPN, @RequestBody PhieuNhap pn) {
-		return pnsrv.update(maPN, pn);
-	}
-	
-	//Delete
-	@DeleteMapping("/{maPN")
-	public void delete(@PathVariable Integer maPN) {
-		pnsrv.deleteById(maPN);
-	}
-	
+	public PhieuNhap add(@RequestBody PhieuNhapDTO dto) {
+		return pnsrv.create(dto);
+	}	
 }

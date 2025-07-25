@@ -43,12 +43,12 @@ public class KhachHang {
 
  private String hinhAnh;
 
- private Boolean trangThai = true;
+ private boolean trangThai = true;
 
  private String maXacThuc;
 
- // ✅ Đổi kiểu boolean -> Boolean
- private Boolean daXacThuc;
+ // ✅ Đổi kiểu boolean -> boolean
+ private boolean daXacThuc;
 
  private LocalDateTime thoiGianHetHanMa;
 
@@ -58,7 +58,7 @@ public KhachHang() {
 }
 
 public KhachHang(Integer maKH, String matKhau, String hoTen, String diaChi, String email, String soDienThoai,
-		String hinhAnh, Boolean trangThai, String maXacThuc, Boolean daXacThuc, LocalDateTime thoiGianHetHanMa) {
+		String hinhAnh, boolean trangThai, String maXacThuc, boolean daXacThuc, LocalDateTime thoiGianHetHanMa) {
 	super();
 	this.maKH = maKH;
 	this.matKhau = matKhau;
@@ -129,11 +129,11 @@ public void setHinhAnh(String hinhAnh) {
 	this.hinhAnh = hinhAnh;
 }
 
-public Boolean getTrangThai() {
+public boolean getTrangThai() {
 	return trangThai;
 }
 
-public void setTrangThai(Boolean trangThai) {
+public void setTrangThai(boolean trangThai) {
 	this.trangThai = trangThai;
 }
 
@@ -145,11 +145,11 @@ public void setMaXacThuc(String maXacThuc) {
 	this.maXacThuc = maXacThuc;
 }
 
-public Boolean getDaXacThuc() {
+public boolean getDaXacThuc() {
 	return daXacThuc;
 }
 
-public void setDaXacThuc(Boolean daXacThuc) {
+public void setDaXacThuc(boolean daXacThuc) {
 	this.daXacThuc = daXacThuc;
 }
 
