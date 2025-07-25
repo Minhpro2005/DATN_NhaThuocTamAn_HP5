@@ -2,6 +2,7 @@
   <div class="container py-4">
     <h4 class="mb-4 text-success">Quản lý ảnh thuốc</h4>
 
+    <!-- Bộ lọc -->
     <div class="row mb-3">
       <div class="col-md-4">
         <input
@@ -16,6 +17,7 @@
       </div>
     </div>
 
+    <!-- Danh sách ảnh -->
     <div class="card shadow-sm">
       <div class="card-body">
         <table class="table table-bordered text-center">
@@ -29,7 +31,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="anh in anhLoc" :key="anh.maAnhThuoc">
+            <tr v-for="anh in anhTrang" :key="anh.maAnhThuoc">
               <td>{{ anh.maThuoc }}</td>
               <td>{{ anh.maAnhThuoc }}</td>
               <td><img :src="getFullImageUrl(anh.hinhAnh)" width="80" height="80" /></td>
@@ -43,6 +45,13 @@
             </tr>
           </tbody>
         </table>
+
+        <!-- Phân trang -->
+        <Pagination
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          @change-page="changePage"
+        />
       </div>
     </div>
 
@@ -85,26 +94,49 @@
       </div>
     </div>
     <div v-if="showModal" class="modal-backdrop fade show"></div>
+
+    <!-- Toast -->
+    <ToastMessage ref="toastRef" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import UploadImg from '../UploadImg.vue'
+import ToastMessage from '../ToastMessage.vue'
+import Pagination from '../Pagination.vue'
 
 const danhSachAnh = ref([])
 const maThuocFilter = ref('')
 const showModal = ref(false)
 const isEditing = ref(false)
 const newImage = ref({ maAnhThuoc: null, maThuoc: null, hinhAnh: '', anhChinh: false })
+const toastRef = ref(null)
 
+// Phân trang
+const currentPage = ref(1)
+const pageSize = 5
+const anhLoc = computed(() =>
+  danhSachAnh.value.filter(
+    (a) => !maThuocFilter.value || a.maThuoc === Number(maThuocFilter.value),
+  ),
+)
+const totalPages = computed(() => Math.ceil(anhLoc.value.length / pageSize))
+const anhTrang = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return anhLoc.value.slice(start, start + pageSize)
+})
+const changePage = (page) => {
+  currentPage.value = page
+}
+
+// Lấy dữ liệu
 const fetchData = async () => {
   const res = await fetch('http://localhost:8080/api/anh-thuoc')
   danhSachAnh.value = await res.json()
 }
 
-onMounted(fetchData)
-
+// Xử lý ảnh
 const getFullImageUrl = (path) => {
   return path ? `http://localhost:8080/${path.startsWith('/') ? path.slice(1) : path}` : ''
 }
@@ -134,7 +166,7 @@ const handleFileUpload = async (file) => {
 
 const luuAnh = async () => {
   if (!newImage.value.maThuoc) {
-    alert('❌ Vui lòng nhập mã thuốc!')
+    toastRef.value.show('❌ Vui lòng nhập mã thuốc!', 'error')
     return
   }
 
@@ -148,27 +180,29 @@ const luuAnh = async () => {
 
     if (!res.ok) {
       const errorText = await res.text()
-      alert('❌ Lỗi: ' + errorText)
+      toastRef.value.show(`❌ Lỗi: ${errorText}`, 'error')
       return
     }
 
     await fetchData()
     closeModal()
+    toastRef.value.show('✅ Lưu ảnh thuốc thành công!', 'success')
   } catch (err) {
-    alert('❌ Lỗi không xác định khi lưu ảnh!')
+    toastRef.value.show('❌ Lỗi không xác định khi lưu ảnh!', 'error')
   }
 }
 
 const xoaAnh = async (id) => {
   if (confirm('Bạn có chắc chắn muốn xóa?')) {
-    await fetch(`http://localhost:8080/api/anh-thuoc/${id}`, { method: 'DELETE' })
-    await fetchData()
+    try {
+      await fetch(`http://localhost:8080/api/anh-thuoc/${id}`, { method: 'DELETE' })
+      await fetchData()
+      toastRef.value.show('🗑️ Đã xóa ảnh thành công.', 'success')
+    } catch (err) {
+      toastRef.value.show('❌ Xóa ảnh thất bại.', 'error')
+    }
   }
 }
 
-const anhLoc = computed(() => {
-  return danhSachAnh.value.filter(
-    (a) => !maThuocFilter.value || a.maThuoc === Number(maThuocFilter.value),
-  )
-})
+onMounted(fetchData)
 </script>
