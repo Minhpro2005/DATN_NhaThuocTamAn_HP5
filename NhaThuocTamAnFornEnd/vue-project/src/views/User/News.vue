@@ -3,17 +3,21 @@
     <div class="container">
       <h2 class="text-success fw-bold mb-4">📰 Tin tức y tế</h2>
       <div class="row">
-        <div class="col-md-4" v-for="news in newsList" :key="news.maTin">
-          <div class="card news-card shadow-sm mb-4">
+        <div class="col-md-4 mb-4" v-for="news in newsList" :key="news.maTin">
+          <div class="card news-card shadow-sm h-100">
             <img :src="news.hinhAnh" class="card-img-top" :alt="news.tieuDe" />
-            <div class="card-body">
-              <p class="text-muted small mb-1">
-                <i class="bi bi-calendar2-week me-1"></i>{{ news.ngayDang }}
-              </p>
-              <h5 class="card-title">{{ news.tieuDe }}</h5>
-              <p class="card-text text-truncate">{{ news.moTa }}</p>
-              <router-link :to="`/tin-tuc/${news.maTin}`" class="btn btn-sm btn-success">
-                Đọc thêm
+            <div class="card-body d-flex flex-column justify-content-between">
+              <div>
+                <p class="text-muted small mb-1">
+                  <i class="bi bi-calendar2-week me-1"></i>{{ formatDate(news.ngayDang) }}
+                </p>
+                <h5 class="card-title">{{ news.tieuDe }}</h5>
+              </div>
+              <router-link
+                :to="`/tin-tuc/${news.maTin}`"
+                class="btn btn-outline-success btn-sm mt-3 px-3 py-1 align-self-start"
+              >
+                ĐỌC THÊM
               </router-link>
             </div>
           </div>
@@ -24,29 +28,35 @@
 </template>
 
 <script setup>
-const newsList = [
-  {
-    maTin: '1',
-    tieuDe: '5 Cách tăng sức đề kháng hiệu quả',
-    moTa: 'Giữ sức khỏe tốt vào mùa dịch với những cách đơn giản từ chuyên gia...',
-    ngayDang: '20/05/2025',
-    hinhAnh: 'vue-project\public\Img\tintuc1.webp',
-  },
-  {
-    maTin: '2',
-    tieuDe: 'Cảnh báo bệnh tay chân miệng trở lại',
-    moTa: 'Số ca tăng nhanh ở trẻ em, cách phòng ngừa và xử lý...',
-    ngayDang: '18/05/2025',
-    hinhAnh: 'vue-project\public\Img\tintuc2.webp',
-  },
-  {
-    maTin: '3',
-    tieuDe: 'Ebola tái bùng phát: Việt Nam cần làm gì?',
-    moTa: 'Khuyến cáo từ Bộ Y Tế về các biện pháp phòng dịch...',
-    ngayDang: '15/05/2025',
-    hinhAnh: 'vue-project\public\Img\tintuce3.webp',
-  },
-]
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+
+const newsList = ref([])
+
+const taiTinTuc = async () => {
+  try {
+    const res = await axios.get('http://localhost:8080/api/tintuc')
+    newsList.value = res.data
+      .filter((t) => t.trangThai) // ✅ chỉ hiển thị bài đang mở
+      .map((t) => ({
+        ...t,
+        hinhAnh: t.hinhAnh.startsWith('http') ? t.hinhAnh : 'http://localhost:8080/' + t.hinhAnh,
+      }))
+  } catch (err) {
+    console.error('❌ Lỗi khi tải tin tức:', err)
+  }
+}
+
+const formatDate = (dateStr) => {
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
+}
+
+onMounted(taiTinTuc)
 </script>
 
 <style scoped>
@@ -55,14 +65,29 @@ const newsList = [
   overflow: hidden;
   transition: all 0.3s ease;
   border: 1px solid #eee;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
+
 .news-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 24px rgba(0, 123, 255, 0.15);
   border-color: #4caf50;
 }
+
 .card-img-top {
-  height: 160px;
+  width: 100%;
+  height: 200px;
   object-fit: cover;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.card-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 </style>
