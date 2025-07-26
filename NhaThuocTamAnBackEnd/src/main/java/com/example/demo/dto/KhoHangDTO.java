@@ -108,6 +108,11 @@ public class KhoHangDTO {
 	public void setTrangThai(Integer trangThai) {
 		this.trangThai = trangThai;
 	}
+
+	public static Object builder() {
+		// TODO Auto-generated method stub
+		return null;
+	}
     
 }
 

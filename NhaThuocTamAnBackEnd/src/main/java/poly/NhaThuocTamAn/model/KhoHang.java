@@ -106,5 +106,25 @@ public class KhoHang {
 	public void setTrangThai(Integer trangThai) {
 		this.trangThai = trangThai;
 	}
+
+	public void setThuoc(Thuoc thuoc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setBienTheThuoc(BienTheThuoc bienThe) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Object getThuoc() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Object getBienTheThuoc() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 }
