@@ -21,9 +21,7 @@
           />
           <div class="card-body d-flex flex-column">
             <h5 class="card-title fw-bold text-success">{{ tin.tieuDe }}</h5>
-            <p class="text-muted small mb-2">{{ tin.moTa }}</p>
 
-            <!-- Nút xem chi tiết gần nội dung -->
             <router-link
               :to="`/admin/chi-tiet-bai-viet/${tin.maTin}`"
               class="btn btn-outline-primary btn-sm align-self-start"
@@ -90,21 +88,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
 const hienForm = ref(false)
-
-const tinTuc = ref([
-  {
-    maTin: 1,
-    tieuDe: 'Thực phẩm chức năng tăng đề kháng',
-    moTa: 'Tăng cường hệ miễn dịch với sản phẩm từ thiên nhiên.',
-    noiDung: '<p>Chi tiết bài viết giúp bạn hiểu về thực phẩm chức năng tốt cho sức khỏe...</p>',
-    tacGia: 'Nguyễn Văn A',
-    ngayDang: '2025-05-24',
-    preview:
-      'https://cdn.nhathuoclongchau.com.vn/unsafe/257x152/https://cms-prod.s3-sgn09.fptcloud.com/cum_9666d8fbb3.png',
-  },
-])
+const tinTuc = ref([])
+const preview = ref(null)
+const selectedFile = ref(null)
 
 const user = { hoTen: 'Nguyễn Văn B' }
 
@@ -113,12 +102,10 @@ const baiViet = ref({
   moTa: '',
   noiDung: '',
   tacGia: user.hoTen,
-  preview: '',
+  hinhAnh: '',
 })
 
-const selectedFile = ref(null)
-const preview = ref(null)
-
+// Chọn và preview ảnh
 const chonAnh = (e) => {
   const file = e.target.files[0]
   if (file) {
@@ -131,28 +118,54 @@ const chonAnh = (e) => {
   }
 }
 
-const dangBai = () => {
-  const newBaiViet = {
-    ...baiViet.value,
-    maTin: Date.now(),
-    ngayDang: new Date().toISOString().split('T')[0],
-    preview: preview.value,
+// Gửi bài viết
+const dangBai = async () => {
+  try {
+    // 1. Upload ảnh
+    if (selectedFile.value) {
+      const formData = new FormData()
+      formData.append('file', selectedFile.value)
+      formData.append('type', 'tintuc')
+
+      const res = await axios.post('http://localhost:8080/api/upload', formData)
+      baiViet.value.hinhAnh = res.data.filename // lưu đường dẫn
+    }
+
+    // 2. Gửi API tạo bài viết
+    const response = await axios.post('http://localhost:8080/api/tintuc', {
+      ...baiViet.value,
+      ngayDang: new Date().toISOString().split('T')[0],
+    })
+
+    // 3. Thêm vào danh sách hiển thị
+    tinTuc.value.unshift({
+      ...response.data,
+      preview: 'http://localhost:8080/' + response.data.hinhAnh,
+    })
+
+    hienForm.value = false
+    baiViet.value = { tieuDe: '', moTa: '', noiDung: '', tacGia: user.hoTen, hinhAnh: '' }
+    selectedFile.value = null
+    preview.value = null
+
+    alert('✅ Bài viết đã được đăng thành công!')
+  } catch (err) {
+    console.error('Lỗi đăng bài:', err)
+    alert('❌ Lỗi khi đăng bài viết.')
   }
-
-  tinTuc.value.unshift(newBaiViet)
-  localStorage.setItem('tinTucFake', JSON.stringify(tinTuc.value))
-
-  hienForm.value = false
-  baiViet.value = { tieuDe: '', moTa: '', noiDung: '', tacGia: user.hoTen }
-  preview.value = null
-  selectedFile.value = null
-
-  alert('✅ Bài viết đã được thêm!')
 }
 
-onMounted(() => {
-  const stored = JSON.parse(localStorage.getItem('tinTucFake'))
-  if (stored?.length) tinTuc.value = stored
+// Tải danh sách tin tức
+onMounted(async () => {
+  try {
+    const res = await axios.get('http://localhost:8080/api/tintuc')
+    tinTuc.value = res.data.map((t) => ({
+      ...t,
+      preview: t.hinhAnh ? 'http://localhost:8080/' + t.hinhAnh : null,
+    }))
+  } catch (err) {
+    console.warn('Chưa có API, dữ liệu sẽ trống.')
+  }
 })
 </script>
 

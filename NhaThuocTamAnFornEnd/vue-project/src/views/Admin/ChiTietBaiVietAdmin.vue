@@ -22,8 +22,8 @@
           <input v-model="tin.tacGia" class="form-control" />
         </div>
         <div class="mb-3">
-          <label class="form-label">🖼 Link ảnh (URL)</label>
-          <input v-model="tin.preview" class="form-control" />
+          <label class="form-label">🖼 Link ảnh</label>
+          <input v-model="tin.hinhAnh" class="form-control" />
         </div>
         <div class="d-flex gap-2">
           <button class="btn btn-success btn-sm" @click="luuChinhSua">💾 Lưu</button>
@@ -52,7 +52,13 @@
           </tr>
           <tr>
             <th>🖼 Ảnh</th>
-            <td><img :src="tin.preview" class="img-fluid rounded" style="max-width: 200px" /></td>
+            <td>
+              <img
+                :src="'http://localhost:8080/' + tin.hinhAnh"
+                class="img-fluid rounded"
+                style="max-width: 200px"
+              />
+            </td>
           </tr>
           <tr>
             <th>📖 Nội dung</th>
@@ -92,48 +98,64 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
 
 const route = useRoute()
 const router = useRouter()
+const id = route.params.id
 
 const xemThem = ref(false)
 const editMode = ref(false)
+const tin = ref(null)
 
-const tinTucList = JSON.parse(localStorage.getItem('tinTucFake')) || []
-const tin = ref(tinTucList.find((t) => t.maTin == route.params.id))
-
-const capNhatLocalStorage = () => {
-  const index = tinTucList.findIndex((t) => t.maTin == tin.value.maTin)
-  if (index !== -1) {
-    tinTucList[index] = { ...tin.value }
-    localStorage.setItem('tinTucFake', JSON.stringify(tinTucList))
+// 🔹 Tải bài viết chi tiết từ API
+const taiBaiViet = async () => {
+  try {
+    const res = await axios.get(`http://localhost:8080/api/tintuc/${id}`)
+    tin.value = res.data
+  } catch (e) {
+    alert('❌ Không tìm thấy bài viết.')
+    router.push('/admin/dang-bai')
   }
 }
 
-const luuChinhSua = () => {
-  capNhatLocalStorage()
-  alert('✅ Đã lưu thay đổi!')
-  editMode.value = false
+// 🔸 Lưu chỉnh sửa
+const luuChinhSua = async () => {
+  try {
+    await axios.put(`http://localhost:8080/api/tintuc/${id}`, tin.value)
+    alert('✅ Đã lưu thay đổi!')
+    editMode.value = false
+  } catch (e) {
+    alert('❌ Lỗi khi cập nhật.')
+  }
 }
 
-const xoaBaiViet = () => {
-  if (confirm('Bạn chắc chắn muốn xóa?')) {
-    const index = tinTucList.findIndex((t) => t.maTin == tin.value.maTin)
-    if (index !== -1) {
-      tinTucList.splice(index, 1)
-      localStorage.setItem('tinTucFake', JSON.stringify(tinTucList))
+// 🔸 Xoá bài viết
+const xoaBaiViet = async () => {
+  if (confirm('Bạn chắc chắn muốn xoá bài viết này?')) {
+    try {
+      await axios.delete(`http://localhost:8080/api/tintuc/${id}`)
       alert('🗑 Đã xóa!')
-      router.push('/admin/danh-sach-bai-viet')
+      router.push('/admin/dang-bai')
+    } catch (e) {
+      alert('❌ Không thể xóa bài viết.')
     }
   }
 }
 
-const toggleTrangThai = () => {
-  tin.value.trangThai = !tin.value.trangThai
-  capNhatLocalStorage()
+// 🔸 Toggle trạng thái
+const toggleTrangThai = async () => {
+  try {
+    const res = await axios.put(`http://localhost:8080/api/tintuc/toggle/${id}`)
+    tin.value.trangThai = res.data.trangThai
+  } catch (e) {
+    alert('❌ Lỗi khi cập nhật trạng thái.')
+  }
 }
+
+onMounted(taiBaiViet)
 </script>
 
 <style scoped>
