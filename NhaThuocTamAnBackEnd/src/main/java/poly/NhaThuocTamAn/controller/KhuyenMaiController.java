@@ -4,43 +4,46 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
 
-import poly.NhaThuocTamAn.model.KhuyenMai;
+import com.example.demo.dto.KhuyenMaiDTO;
 import poly.NhaThuocTamAn.service.KhuyenMaiService;
 
 @RestController
 @RequestMapping("/api/khuyen-mai")
+@CrossOrigin(origins = "*")
 public class KhuyenMaiController {
 	@Autowired
 	private KhuyenMaiService kmsrv;
 	
 	//Get all
 	@GetMapping
-	public List<KhuyenMai> getAll(){
+	public List<KhuyenMaiDTO> getAll(){
 		return kmsrv.getAll();
 	}
 	
 	//Get by ID
-	@GetMapping("/{maKM}")
-	public KhuyenMai getById(@PathVariable Integer maKM) {
-		return kmsrv.getById(maKM);
+	@GetMapping("/{id}")
+	public ResponseEntity<KhuyenMaiDTO> getById(@PathVariable Integer id) {
+		return ResponseEntity.ok(kmsrv.getById(id));
 	}
 	
 	//Add
 	@PostMapping
-	public KhuyenMai add(@RequestBody KhuyenMai km) {
-		return kmsrv.add(km);
+	public ResponseEntity<KhuyenMaiDTO> add(@RequestBody KhuyenMaiDTO km) {
+		return ResponseEntity.ok(kmsrv.create(km));
 	}
 	
 	//Update
-	@PutMapping("/{maKM}")
-	public KhuyenMai update(@PathVariable Integer maKM, @RequestBody KhuyenMai km) {
-		return kmsrv.update(maKM, km);
+	@PutMapping("/{id}")
+	public ResponseEntity<KhuyenMaiDTO> update(@PathVariable Integer id, @RequestBody KhuyenMaiDTO km) {
+		return ResponseEntity.ok(kmsrv.update(id, km));
 	}
 	
 	//Delete
-	@DeleteMapping("/{maKM}")
-	public void delete(@PathVariable Integer maKM) {
-		kmsrv.deleteById(maKM);
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> delete(@PathVariable Integer id) {
+		kmsrv.delete(id);
+		return ResponseEntity.ok().build();
 	}
 }

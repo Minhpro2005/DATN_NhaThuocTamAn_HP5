@@ -1,5 +1,6 @@
 package poly.NhaThuocTamAn.model;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import jakarta.persistence.Column;
@@ -124,6 +125,26 @@ public class KhuyenMai {
 
 	public void setTrangThai(boolean trangThai) {
 		this.trangThai = trangThai;
+	}
+
+	public void setDaSuDung(int i) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public int getSoLuong() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public int getDaSuDung() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public BigDecimal getDonHangToiThieu() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	
