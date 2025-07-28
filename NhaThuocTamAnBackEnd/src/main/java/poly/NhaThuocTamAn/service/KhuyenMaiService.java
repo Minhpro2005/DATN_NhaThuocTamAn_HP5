@@ -1,39 +1,15 @@
 package poly.NhaThuocTamAn.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import com.example.demo.dto.KhuyenMaiDTO;
 
-import org.springframework.stereotype.Service;
-
-import poly.NhaThuocTamAn.model.KhuyenMai;
-import poly.NhaThuocTamAn.repository.KhuyenMaiRepository;
-
-@Service
-public class KhuyenMaiService {
-	private final KhuyenMaiRepository kmrep;
-	
-	public KhuyenMaiService(KhuyenMaiRepository kmrep) {
-		this.kmrep=kmrep;
-	}
-	
-	public List<KhuyenMai> getAll(){
-		return this.kmrep.findAll();
-	}
-	
-	public KhuyenMai getById(Integer maKM) {
-		Optional<KhuyenMai> optional = kmrep.findById(maKM);
-        return optional.orElse(null);
-	}
-	
-	public KhuyenMai add(KhuyenMai km) {
-		return kmrep.save(km);
-	}
-	
-	public KhuyenMai update(Integer maKM, KhuyenMai km) {
-		return kmrep.save(km);
-	}
-	
-	public void deleteById(Integer maKM) {
-		kmrep.deleteById(maKM);
-	}
+public interface KhuyenMaiService {
+	List<KhuyenMaiDTO> getAll();
+    KhuyenMaiDTO getById(Integer id);
+    KhuyenMaiDTO create(KhuyenMaiDTO dto);
+    KhuyenMaiDTO update(Integer id, KhuyenMaiDTO dto);
+    void delete(Integer id);
+    Optional<KhuyenMaiDTO> apDungVoucher(String code, BigDecimal tongTien);
 }
