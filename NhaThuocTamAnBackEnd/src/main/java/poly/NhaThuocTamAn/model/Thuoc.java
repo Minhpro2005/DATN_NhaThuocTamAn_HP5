@@ -221,6 +221,11 @@ public class Thuoc {
 	public void setMaNCC(NhaCungCap maNCC) {
 		this.maNCC = maNCC;
 	}
+
+	public Thuoc getThuoc() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 	
 

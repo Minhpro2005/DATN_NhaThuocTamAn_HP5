@@ -2,6 +2,8 @@ package poly.NhaThuocTamAn.model;
 
 import java.util.Date;
 
+import com.example.demo.dto.DanhGiaDTO;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -115,6 +117,36 @@ public class DanhGia {
 
 	public void setNgayDanhGia(Date ngayDanhGia) {
 		this.ngayDanhGia = ngayDanhGia;
+	}
+
+	public Object getBienTheThuoc() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setKhachHang(KhachHang kh) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setBienTheThuoc(BienTheThuoc bt) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setThuoc(Thuoc thuoc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public DanhGiaDTO getKhachHang() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Object getThuoc() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

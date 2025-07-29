@@ -141,5 +141,10 @@ public class DanhGiaDTO {
 	public void setHinhAnhKH(String hinhAnhKH) {
 		this.hinhAnhKH = hinhAnhKH;
 	}
+
+	public String getHoTen() {
+		// TODO Auto-generated method stub
+		return null;
+	}
     
 }
