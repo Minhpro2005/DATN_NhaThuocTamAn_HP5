@@ -12,10 +12,14 @@
           placeholder="Lọc theo mã thuốc..."
         />
       </div>
+      <div class="col-md-4 d-flex align-items-center">
+        <input class="form-check-input me-2" type="checkbox" v-model="hienDaXoa" id="showDeleted" />
+        <label class="form-check-label" for="showDeleted">Hiển thị biến thể đã xóa</label>
+      </div>
     </div>
 
     <!-- Nút thêm -->
-    <div class="mb-3">
+    <div class="mb-3" v-if="!hienDaXoa">
       <button class="btn btn-success" @click="openModal()">➕ Thêm biến thể</button>
     </div>
 
@@ -30,6 +34,7 @@
               <th>Tên biến thể</th>
               <th>Giá bán</th>
               <th>Đơn vị</th>
+              <th>Quy cách</th>
               <th>Trạng thái</th>
               <th>Ảnh</th>
               <th>Hành động</th>
@@ -41,7 +46,8 @@
               <td>{{ bt.maBienThe }}</td>
               <td>{{ bt.tenBienThe }}</td>
               <td>{{ formatCurrency(bt.giaBan) }}</td>
-              <td>{{ bt.donViTinh }}</td>
+              <td>{{ bt.tenDonViTinh }}</td>
+              <td>{{ bt.moTaQuyCach }}</td>
               <td :class="bt.trangThai ? 'text-success' : 'text-danger'">
                 {{ bt.trangThai ? 'Hoạt động' : 'Ngừng bán' }}
               </td>
@@ -56,9 +62,21 @@
                 />
               </td>
               <td>
-                <button class="btn btn-sm btn-warning me-2" @click="openModal(bt)">Sửa</button>
-                <button class="btn btn-sm btn-danger" @click="xoaBienThe(bt.maBienThe)">Xóa</button>
+                <template v-if="!hienDaXoa">
+                  <button class="btn btn-sm btn-warning me-2" @click="openModal(bt)">Sửa</button>
+                  <button class="btn btn-sm btn-danger" @click="xoaBienThe(bt.maBienThe)">
+                    Xóa
+                  </button>
+                </template>
+                <template v-else>
+                  <button class="btn btn-sm btn-success" @click="khoiPhucBienThe(bt.maBienThe)">
+                    Khôi phục
+                  </button>
+                </template>
               </td>
+            </tr>
+            <tr v-if="bienTheTrang.length === 0">
+              <td colspan="9" class="text-center text-muted">Không có dữ liệu</td>
             </tr>
           </tbody>
         </table>
@@ -94,12 +112,21 @@
                 class="form-control mb-3"
                 placeholder="Giá bán"
               />
-              <input
-                v-model="form.donViTinh"
-                type="text"
-                class="form-control mb-3"
-                placeholder="Đơn vị tính"
-              />
+
+              <select v-model="form.maDVT" class="form-select mb-3">
+                <option disabled value="">-- Chọn đơn vị tính --</option>
+                <option v-for="dvt in danhSachDonViTinh" :key="dvt.maDVT" :value="dvt.maDVT">
+                  {{ dvt.ten }}
+                </option>
+              </select>
+
+              <select v-model="form.maQCDG" class="form-select mb-3">
+                <option disabled value="">-- Chọn quy cách --</option>
+                <option v-for="qc in danhSachQuyCach" :key="qc.maQCDG" :value="qc.maQCDG">
+                  {{ qc.moTa }}
+                </option>
+              </select>
+
               <textarea
                 v-model="form.moTa"
                 class="form-control mb-3"
@@ -130,55 +157,48 @@
         </div>
       </div>
     </template>
-    <!-- Phân trang -->
-    <Pagination :current-page="currentPage" :total-pages="totalPages" @change-page="changePage" />
 
-    <!-- Toast -->
+    <Pagination :current-page="currentPage" :total-pages="totalPages" @change-page="changePage" />
     <ToastMessage ref="toastRef" />
   </div>
 </template>
 
 <script setup>
+import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
-import { ref, onMounted, computed } from 'vue'
 import ToastMessage from '../ToastMessage.vue'
 import Pagination from '../Pagination.vue'
 
 const bienTheList = ref([])
-const form = ref({})
-const showModal = ref(false)
+const danhSachDonViTinh = ref([])
+const danhSachQuyCach = ref([])
 const maThuocFilter = ref('')
+const hienDaXoa = ref(false)
+const showModal = ref(false)
+const form = ref({})
 const fileAnh = ref(null)
 const toastRef = ref(null)
-
 const currentPage = ref(1)
-const pageSize = 5 // Số dòng trên mỗi trang
-const totalPages = computed(() => Math.ceil(bienTheLoc.value.length / pageSize))
+const pageSize = 5
 
+const bienTheLoc = computed(() => {
+  return bienTheList.value.filter(
+    (bt) => !maThuocFilter.value || bt.maThuoc == Number(maThuocFilter.value),
+  )
+})
+
+const totalPages = computed(() => Math.ceil(bienTheLoc.value.length / pageSize))
 const bienTheTrang = computed(() => {
   const start = (currentPage.value - 1) * pageSize
   return bienTheLoc.value.slice(start, start + pageSize)
 })
 
-function changePage(page) {
-  currentPage.value = page
-}
-
-onMounted(fetchData)
-
-async function fetchData() {
-  try {
-    const res = await axios.get('http://localhost:8080/api/bienthe')
-    bienTheList.value = Array.isArray(res.data) ? res.data : []
-  } catch (err) {
-    console.error('Lỗi fetch biến thể:', err)
-    toastRef.value.show('❌ Lỗi khi tải danh sách biến thể.', 'error')
-  }
+function formatCurrency(val) {
+  return Number(val).toLocaleString('vi-VN') + '₫'
 }
 
 function getImageUrl(path) {
-  if (!path) return ''
-  return `http://localhost:8080${path.startsWith('/') ? path : '/' + path}`
+  return path ? `http://localhost:8080/${path.replace(/^\/+/, '')}` : ''
 }
 
 function openModal(bt = null) {
@@ -188,11 +208,11 @@ function openModal(bt = null) {
         maThuoc: '',
         tenBienThe: '',
         giaBan: '',
-        donViTinh: '',
+        maDVT: '',
+        maQCDG: '',
         moTa: '',
         trangThai: true,
         hinhAnh: '',
-        maBienThe: null,
       }
   fileAnh.value = null
   showModal.value = true
@@ -200,6 +220,7 @@ function openModal(bt = null) {
 
 function closeModal() {
   showModal.value = false
+  form.value = {}
 }
 
 function onFileChange(e) {
@@ -212,51 +233,80 @@ async function luuBienThe() {
     formData.append('data', new Blob([JSON.stringify(form.value)], { type: 'application/json' }))
     if (fileAnh.value) formData.append('file', fileAnh.value)
 
-    if (form.value.maBienThe) {
-      await axios.put(`http://localhost:8080/api/bienthe/${form.value.maBienThe}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
-      toastRef.value.show('✅ Cập nhật biến thể thành công!', 'success')
-    } else {
-      await axios.post('http://localhost:8080/api/bienthe', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
-      toastRef.value.show('✅ Thêm biến thể thành công!', 'success')
-    }
+    const url = form.value.maBienThe
+      ? `http://localhost:8080/api/bienthe/${form.value.maBienThe}`
+      : 'http://localhost:8080/api/bienthe'
+
+    await axios({
+      method: form.value.maBienThe ? 'put' : 'post',
+      url,
+      data: formData,
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
 
     await fetchData()
     closeModal()
+    toastRef.value.show('✅ Lưu biến thể thành công!', 'success')
   } catch (err) {
-    console.error('Lỗi lưu:', err)
-    toastRef.value.show('❌ Lỗi khi lưu biến thể thuốc.', 'error')
+    console.error(err)
+    toastRef.value.show('❌ Lỗi lưu biến thể!', 'error')
   }
 }
 
 async function xoaBienThe(id) {
-  if (confirm('Bạn có chắc muốn xóa biến thể này?')) {
-    try {
-      await axios.delete(`http://localhost:8080/api/bienthe/${id}`)
-      await fetchData()
-      toastRef.value.show('🗑️ Đã xóa biến thể thành công.', 'success')
-    } catch (err) {
-      console.error('Lỗi xóa:', err)
-      toastRef.value.show('❌ Xóa biến thể thất bại.', 'error')
-    }
+  if (!confirm('Bạn có chắc muốn xóa biến thể này?')) return
+  try {
+    await axios.delete(`http://localhost:8080/api/bienthe/${id}`)
+    await fetchData()
+    toastRef.value.show('🗑️ Đã xóa biến thể!', 'success')
+  } catch (err) {
+    toastRef.value.show('❌ Lỗi khi xóa biến thể!', 'error')
   }
 }
 
-const bienTheLoc = computed(() => {
-  return bienTheList.value.filter((bt) => !maThuocFilter.value || bt.maThuoc == maThuocFilter.value)
+async function khoiPhucBienThe(id) {
+  if (!confirm('Bạn có chắc muốn khôi phục biến thể này?')) return
+  try {
+    await axios.put(`http://localhost:8080/api/bienthe/${id}/khoi-phuc`)
+    await fetchData()
+    toastRef.value.show('✅ Đã khôi phục biến thể!', 'success')
+    hienDaXoa.value = false
+  } catch (err) {
+    toastRef.value.show('❌ Khôi phục thất bại!', 'error')
+  }
+}
+
+function changePage(page) {
+  currentPage.value = page
+}
+
+async function fetchData() {
+  try {
+    const url = hienDaXoa.value
+      ? 'http://localhost:8080/api/bienthe/da-xoa'
+      : 'http://localhost:8080/api/bienthe'
+    const res = await axios.get(url)
+    bienTheList.value = res.data
+  } catch (err) {
+    toastRef.value.show('❌ Lỗi khi tải biến thể!', 'error')
+  }
+}
+
+async function fetchDonViTinh() {
+  const res = await axios.get('http://localhost:8080/api/donvitinh')
+  danhSachDonViTinh.value = res.data
+}
+
+async function fetchQuyCachDongGoi() {
+  const res = await axios.get('http://localhost:8080/api/quycachdonggoi')
+  danhSachQuyCach.value = res.data
+}
+
+onMounted(() => {
+  fetchData()
+  fetchDonViTinh()
+  fetchQuyCachDongGoi()
 })
 
-function formatCurrency(val) {
-  return Number(val).toLocaleString('vi-VN') + '₫'
-}
+watch(hienDaXoa, fetchData)
 </script>
-
-<style scoped>
-.table td,
-.table th {
-  vertical-align: middle;
-}
-</style>
