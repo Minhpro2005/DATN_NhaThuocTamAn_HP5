@@ -80,14 +80,15 @@
               {{ sp.trangThai ? 'Hoạt động' : 'Ngừng bán' }}
             </td>
             <td>
-              <router-link class="btn btn-sm btn-info me-1" :to="`/admin/thuoc/${sp.maThuoc}`"
-                >Xem</router-link
-              >
+              <router-link class="btn btn-sm btn-info me-1" :to="`/admin/thuoc/${sp.maThuoc}`">
+                <i class="bi bi-search"></i>
+              </router-link>
+
               <button v-if="!sp.daXoa" class="btn btn-sm btn-warning me-1" @click="openModal(sp)">
-                Sửa
+                ✏️
               </button>
               <button v-if="!sp.daXoa" class="btn btn-sm btn-danger" @click="xoaThuoc(sp.maThuoc)">
-                Xóa
+                🗑️
               </button>
               <button
                 v-if="sp.daXoa"

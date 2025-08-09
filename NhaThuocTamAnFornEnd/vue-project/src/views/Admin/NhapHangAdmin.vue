@@ -1,6 +1,6 @@
 <template>
   <div class="container py-4">
-    <h4 class="text-success mb-4 fw-bold">📥 Quản lý Phiếu Nhập</h4>
+    <h4 class="text-success mb-4 fw-bold">📥 Quản lý Phiếu Nhập Hàng</h4>
 
     <!-- Bộ lọc -->
     <div class="row g-2 mb-3">
@@ -17,7 +17,7 @@
 
     <!-- Nút tạo mới -->
     <div class="text-end mb-3">
-      <button class="btn btn-success" @click="moTao = true">➕ Tạo phiếu nhập</button>
+      <button class="btn btn-success" @click="moTao = true">➕ Tạo phiếu nhập hàng</button>
     </div>
 
     <!-- Danh sách phiếu nhập -->
@@ -40,7 +40,9 @@
           <td>{{ pn.nhaCungCap?.tenNCC }}</td>
           <td class="text-end text-danger fw-bold">{{ formatPrice(pn.tongTien) }}</td>
           <td class="text-center">
-            <button class="btn btn-sm btn-info" @click="xemChiTiet(pn)">Xem</button>
+            <button class="btn btn-sm btn-info" @click="xemChiTiet(pn)">
+              <i class="bi-search"></i>
+            </button>
           </td>
         </tr>
       </tbody>
@@ -71,7 +73,7 @@
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">📝 Tạo Phiếu Nhập</h5>
+            <h5 class="modal-title">📝 Tạo Phiếu Nhập Hàng</h5>
             <button class="btn-close" @click="moTao = false"></button>
           </div>
           <div class="modal-body">
@@ -88,21 +90,55 @@
             </div>
 
             <div class="row g-2 mb-3">
-              <div class="col-md-4 position-relative">
+              <div class="col-md-4 position-relative" ref="searchWrapper">
                 <input
                   v-model="search"
                   class="form-control"
                   placeholder="Tìm thuốc hoặc biến thể"
                   @input="filterSuggestions"
                 />
-                <ul v-if="suggestions.length" class="list-group position-absolute z-3">
+                <ul
+                  class="list-group position-absolute z-3 w-100 shadow border"
+                  style="max-height: 300px; overflow-y: auto"
+                  v-if="suggestions.length"
+                >
                   <li
-                    class="list-group-item list-group-item-action"
                     v-for="s in suggestions"
                     :key="s.ma"
-                    @click="chonThuoc(s)"
+                    class="list-group-item d-flex justify-content-between align-items-center"
                   >
-                    {{ s.ten }}
+                    <!-- Cột trái: ảnh + thông tin -->
+                    <div class="d-flex align-items-center flex-grow-1">
+                      <img
+                        :src="getImageUrl(s.hinhAnh)"
+                        alt="Ảnh"
+                        class="me-3"
+                        style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px"
+                      />
+                      <div style="min-width: 0">
+                        <div
+                          class="fw-semibold text-truncate"
+                          :title="s.ten"
+                          style="max-width: 350px"
+                        >
+                          {{ s.ten }}
+                        </div>
+                        <div style="font-size: 0.75rem; color: gray">Mã: {{ s.ma }}</div>
+
+                        <span
+                          class="badge mt-1"
+                          :class="s.type === 'thuoc' ? 'bg-primary' : 'bg-secondary'"
+                          style="font-size: 0.75rem"
+                        >
+                          {{ s.type === 'thuoc' ? 'Thuốc' : 'Biến thể' }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Nút chọn -->
+                    <button class="btn btn-outline-success btn-sm ms-3" @click="chonThuoc(s)">
+                      ✔ Chọn
+                    </button>
                   </li>
                 </ul>
               </div>
@@ -130,7 +166,7 @@
             <table class="table table-bordered">
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>STT</th>
                   <th>Tên</th>
                   <th>SL</th>
                   <th>Giá</th>
@@ -178,7 +214,7 @@
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5>Chi Tiết Phiếu Nhập #{{ selected?.maPN }}</h5>
+            <h5>Chi Tiết Phiếu Nhập Hàng #{{ selected?.maPN }}</h5>
             <button class="btn-close" @click="modalChiTiet = false"></button>
           </div>
           <div class="modal-body">
@@ -188,7 +224,7 @@
             <table class="table table-striped">
               <thead>
                 <tr>
-                  <th>MaPN</th>
+                  <th>STT</th>
                   <th>Tên thuốc</th>
                   <th>SL</th>
                   <th>Đơn giá</th>
@@ -198,7 +234,14 @@
               <tbody>
                 <tr v-for="(ct, i) in chiTietList" :key="i">
                   <td>{{ i + 1 }}</td>
-                  <td>{{ ct.thuoc?.tenThuoc || ct.bienTheThuoc?.tenBienThe || 'Không rõ' }}</td>
+                  <td>
+                    {{
+                      ct.thuoc?.tenThuoc ||
+                      ct.bienTheThuoc?.thuoc?.tenThuoc + ' - ' + ct.bienTheThuoc?.tenBienThe ||
+                      'Không rõ'
+                    }}
+                  </td>
+
                   <td>{{ ct.soLuong }}</td>
                   <td class="text-end">{{ formatPrice(ct.donGiaNhap) }}</td>
                   <td class="text-end">{{ formatPrice(ct.soLuong * ct.donGiaNhap) }}</td>
@@ -212,36 +255,39 @@
           </div>
           <div class="modal-footer">
             <button class="btn btn-secondary" @click="modalChiTiet = false">Đóng</button>
+            <button class="btn btn-primary" @click="printPhieuNhap">
+              <i class="bi bi-printer me-2"></i> In phiếu nhập
+            </button>
           </div>
         </div>
       </div>
     </div>
+
+    <ToastMessage ref="toast" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import axios from 'axios'
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 
-// Lọc và phân trang
+import axios from 'axios'
+import ToastMessage from '../ToastMessage.vue'
+
+const toast = ref(null)
 const keyword = ref('')
 const tuNgay = ref('')
 const denNgay = ref('')
 const currentPage = ref(0)
 const pageSize = 10
 
-// Dữ liệu phiếu nhập
 const phieuNhaps = ref([])
 const chiTietList = ref([])
 const selected = ref(null)
-
-// Modal & form
 const moTao = ref(false)
 const modalChiTiet = ref(false)
 const currentUser = ref({ maNV: 1, hoTen: 'Nguyễn Văn A' })
 const form = ref({ maNCC: '', chiTiet: [] })
 
-// Dữ liệu phụ trợ
 const nhaCungCaps = ref([])
 const dsThuoc = ref([])
 const dsBienThe = ref([])
@@ -249,45 +295,87 @@ const suggestions = ref([])
 const search = ref('')
 const thuoc = ref({ ma: null, ten: '', type: '', soLuong: 1, donGiaNhap: 0 })
 
-// ===== Helpers =====
 const formatPrice = (n) => (n ?? 0).toLocaleString('vi-VN') + ' đ'
 const formatDate = (d) => new Date(d).toLocaleDateString('vi-VN')
 const tinhTongTien = () => form.value.chiTiet.reduce((sum, t) => sum + t.soLuong * t.donGiaNhap, 0)
 
-// ===== Search thuốc / biến thể =====
+const searchWrapper = ref(null)
+
+const handleClickOutside = (event) => {
+  if (searchWrapper.value && !searchWrapper.value.contains(event.target)) {
+    suggestions.value = []
+  }
+}
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
 const filterSuggestions = () => {
   const kw = search.value.toLowerCase()
-  suggestions.value = [
-    ...dsThuoc.value
-      .filter((t) => t.tenThuoc.toLowerCase().includes(kw))
-      .map((t) => ({ ma: t.maThuoc, ten: t.tenThuoc, type: 'thuoc' })),
-    ...dsBienThe.value
-      .filter((bt) => bt.tenBienThe.toLowerCase().includes(kw))
-      .map((bt) => ({ ma: bt.maBienThe, ten: bt.tenBienThe, type: 'bienthe' })),
-  ]
+  suggestions.value = []
+
+  dsThuoc.value.forEach((thuoc) => {
+    const isMatch = thuoc.tenThuoc.toLowerCase().includes(kw)
+    const matchedBienThes = thuoc.bienThes?.filter((bt) =>
+      (thuoc.tenThuoc + ' - ' + bt.tenBienThe).toLowerCase().includes(kw),
+    )
+
+    // Nếu thuốc khớp tên → push thuốc
+    if (isMatch) {
+      suggestions.value.push({
+        ma: thuoc.maThuoc,
+        ten: thuoc.tenThuoc,
+        type: 'thuoc',
+        hinhAnh: thuoc.hinhAnhChinh,
+      })
+    }
+
+    // Nếu có biến thể khớp → push từng biến thể
+    matchedBienThes?.forEach((bt) => {
+      suggestions.value.push({
+        ma: bt.maBienThe,
+        ten: `${thuoc.tenThuoc} - ${bt.tenBienThe}`,
+        type: 'bienthe',
+        hinhAnh: bt.hinhAnh,
+      })
+    })
+  })
 }
+
 const chonThuoc = (item) => {
-  thuoc.value = { ma: item.ma, ten: item.ten, type: item.type, soLuong: 1, donGiaNhap: 0 }
+  thuoc.value = {
+    ma: item.ma,
+    ten: item.ten,
+    type: item.type,
+    soLuong: 1,
+    donGiaNhap: 0,
+  }
   search.value = item.ten
   suggestions.value = []
 }
 
-// ===== Thêm vào chi tiết nhập =====
+const getImageUrl = (path) => {
+  return path ? `http://localhost:8080/${path.startsWith('/') ? path.slice(1) : path}` : ''
+}
+
 const themThuoc = () => {
   if (thuoc.value.ma && thuoc.value.soLuong > 0 && thuoc.value.donGiaNhap > 0) {
     const exists = form.value.chiTiet.some(
       (t) => t.ma === thuoc.value.ma && t.type === thuoc.value.type,
     )
-    if (exists) return alert('Sản phẩm đã tồn tại trong danh sách')
+    if (exists) {
+      toast.value.show('⚠️ Sản phẩm đã tồn tại trong danh sách', 'warning')
+      return
+    }
     form.value.chiTiet.push({ ...thuoc.value })
     thuoc.value = { ma: null, ten: '', type: '', soLuong: 1, donGiaNhap: 0 }
     search.value = ''
   } else {
-    alert('Vui lòng nhập đúng số lượng và giá')
+    toast.value.show('❌ Vui lòng nhập đúng số lượng và giá', 'error')
   }
 }
 
-// ===== Lưu phiếu nhập =====
 const luuPhieuNhap = async () => {
   const chiTiet = form.value.chiTiet.map((t) => ({
     maThuoc: t.type === 'thuoc' ? t.ma : null,
@@ -303,9 +391,9 @@ const luuPhieuNhap = async () => {
   moTao.value = false
   form.value = { maNCC: '', chiTiet: [] }
   await loadPhieuNhaps()
+  toast.value.show('✅ Tạo phiếu nhập thành công!', 'success')
 }
 
-// ===== Xem chi tiết =====
 const xemChiTiet = async (pn) => {
   selected.value = pn
   const res = await axios.get(`http://localhost:8080/api/phieu-nhap/${pn.maPN}/chi-tiet`)
@@ -313,11 +401,9 @@ const xemChiTiet = async (pn) => {
   modalChiTiet.value = true
 }
 
-// ===== Tìm kiếm và phân trang =====
 const filteredPhieuNhaps = computed(() => {
   let list = [...phieuNhaps.value]
-  list.sort((a, b) => new Date(b.ngayNhap) - new Date(a.ngayNhap)) // ⬅️ Thêm dòng này
-
+  list.sort((a, b) => new Date(b.ngayNhap) - new Date(a.ngayNhap))
   if (keyword.value) {
     const kw = keyword.value.toLowerCase()
     list = list.filter(
@@ -349,32 +435,40 @@ const tongTienChiTiet = computed(() =>
   chiTietList.value.reduce((sum, ct) => sum + ct.soLuong * ct.donGiaNhap, 0),
 )
 
-// ===== Load dữ liệu =====
 const loadPhieuNhaps = async () => {
   const res = await axios.get('http://localhost:8080/api/phieu-nhap')
   phieuNhaps.value = res.data
 }
 const loadData = async () => {
-  const [ncc, thuoc, bienThe] = await Promise.all([
+  const [ncc, thuocRes, bienTheRes] = await Promise.all([
     axios.get('http://localhost:8080/api/nhacungcap'),
     axios.get('http://localhost:8080/api/thuoc'),
     axios.get('http://localhost:8080/api/bienthe'),
   ])
-  nhaCungCaps.value = ncc.data
-  dsThuoc.value = thuoc.data
 
-  // Thêm tên hiển thị đầy đủ cho biến thể
-  dsBienThe.value = bienThe.data.map((bt) => ({
-    ...bt,
-    tenThuocFull:
-      bt.tenThuoc && bt.tenBienThe
-        ? `${bt.tenThuoc} - ${bt.tenBienThe}`
-        : bt.tenBienThe || 'Biến thể',
-  }))
+  nhaCungCaps.value = ncc.data
+  dsThuoc.value = thuocRes.data
+  dsBienThe.value = bienTheRes.data
+
+  // Gắn biến thể vào từng thuốc
+  dsThuoc.value.forEach((t) => {
+    t.bienThes = dsBienThe.value.filter((bt) => bt.maThuoc === t.maThuoc)
+  })
 }
 
 onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
   loadPhieuNhaps()
   loadData()
 })
 </script>
+<style scoped>
+.list-group-item {
+  padding: 10px 12px;
+  white-space: nowrap;
+}
+.list-group {
+  min-width: 600px;
+  max-width: 800px;
+}
+</style>

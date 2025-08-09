@@ -63,9 +63,9 @@
               </td>
               <td>
                 <template v-if="!hienDaXoa">
-                  <button class="btn btn-sm btn-warning me-2" @click="openModal(bt)">Sửa</button>
+                  <button class="btn btn-sm btn-warning me-2" @click="openModal(bt)">✏️</button>
                   <button class="btn btn-sm btn-danger" @click="xoaBienThe(bt.maBienThe)">
-                    Xóa
+                    🗑️
                   </button>
                 </template>
                 <template v-else>

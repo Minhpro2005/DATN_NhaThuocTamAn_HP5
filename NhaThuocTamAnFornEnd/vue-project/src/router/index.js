@@ -54,6 +54,7 @@ import TraCuuDonHang from '@/views/User/TraCuuDonHang.vue'
 import DatHangThatBai from '@/views/User/DatHangThatBai.vue'
 import DonViTinhAdmin from '@/views/Admin/DonViTinhAdmin.vue'
 import QuyCachDongGoiAdmin from '@/views/Admin/QuyCachDongGoiAdmin.vue'
+import ChiTietThuoc from '@/views/Admin/ChiTietThuoc.vue'
 
 const routes = [
   { path: '/', redirect: '/home' },
@@ -115,6 +116,7 @@ const routes = [
       { path: 'khach-hang', component: KhachHangAdmin },
       { path: 'don-vi-tinh', component: DonViTinhAdmin },
       { path: 'quy-cach-dong-goi', component: QuyCachDongGoiAdmin },
+       { path: 'thuoc/:maThuoc', name: 'chi-tiet-thuoc', component: ChiTietThuoc },
     ],
   },
 ]
