@@ -40,6 +40,7 @@
           <th>Sao</th>
           <th>Nội dung & Ảnh</th>
           <th>Ngày đánh giá</th>
+          <th>Phản hồi</th>
           <th>Hành động</th>
         </tr>
       </thead>
@@ -70,14 +71,35 @@
             </div>
           </td>
           <td>{{ formatDate(dg.ngay) }}</td>
+
+          <!-- Cột phản hồi -->
+          <td class="text-start">
+            <div v-if="dg.phanHoi" class="bg-light p-2 rounded">
+              <strong class="text-success">Admin:</strong> {{ dg.phanHoi }}
+            </div>
+            <button v-else class="btn btn-sm btn-outline-success mt-1" @click="startReply(dg.id)">
+              💬 Phản hồi
+            </button>
+
+            <div v-if="editingReplyId === dg.id" class="mt-2">
+              <textarea
+                v-model="replyContent"
+                class="form-control mb-2"
+                placeholder="Nhập phản hồi..."
+              ></textarea>
+              <button class="btn btn-sm btn-success me-1" @click="submitReply(dg.id)">Gửi</button>
+              <button class="btn btn-sm btn-secondary" @click="editingReplyId = null">Hủy</button>
+            </div>
+          </td>
+
           <td>
-            <button class="btn btn-sm btn-danger" @click="xoaDanhGia(dg.id)">Xóa</button>
+            <button class="btn btn-sm btn-danger" @click="xoaDanhGia(dg.id)">🗑️</button>
           </td>
         </tr>
       </tbody>
     </table>
 
-    <!-- ✅ Phân trang giống Đơn Hàng -->
+    <!-- ✅ Phân trang -->
     <nav class="mt-3" v-if="totalPages > 1">
       <ul class="pagination justify-content-center">
         <li
@@ -127,6 +149,9 @@ const pageSize = ref(5)
 const danhGiaList = ref([])
 const isLoading = ref(true)
 
+const editingReplyId = ref(null)
+const replyContent = ref('')
+
 // Avatar người dùng
 function getAvatarUrl(path) {
   if (!path) return 'https://cdn-icons-png.flaticon.com/512/149/149071.png'
@@ -154,6 +179,7 @@ const fetchDanhGia = async () => {
       sao: dg.soSao,
       noiDung: dg.binhLuan,
       ngay: dg.ngayDanhGia,
+      phanHoi: dg.phanHoi || null, // ✅ thêm vào
     }))
     currentPage.value = 1
   } catch (err) {
@@ -167,6 +193,30 @@ const fetchDanhGia = async () => {
 onMounted(() => {
   fetchDanhGia()
 })
+
+// Gửi phản hồi
+function startReply(id) {
+  editingReplyId.value = id
+  replyContent.value = ''
+}
+
+async function submitReply(id) {
+  if (!replyContent.value.trim()) {
+    alert('Vui lòng nhập nội dung phản hồi')
+    return
+  }
+  try {
+    await axios.put(`${serverUrl}/api/danh-gia/phan-hoi/${id}`, {
+      phanHoi: replyContent.value,
+    })
+    alert('✅ Đã gửi phản hồi!')
+    editingReplyId.value = null
+    await fetchDanhGia()
+  } catch (err) {
+    alert('❌ Lỗi khi gửi phản hồi')
+    console.error(err)
+  }
+}
 
 // Lọc và sắp xếp
 const filteredDanhGia = computed(() => {
@@ -184,7 +234,7 @@ const filteredDanhGia = computed(() => {
 
       return matchKeyword && matchSao && matchNgay
     })
-    .sort((a, b) => new Date(b.ngay) - new Date(a.ngay))
+    .sort((a, b) => b.id - a.id)
 })
 
 const totalPages = computed(() => Math.ceil(filteredDanhGia.value.length / pageSize.value))
