@@ -6,22 +6,18 @@
 
     <!-- Thanh tìm kiếm -->
     <div class="mb-4">
-      <div class="input-group w-100">
-        <span class="input-group-text bg-white border-0">🔎</span>
-        <input
-          v-model="keyword"
-          type="text"
-          class="form-control border-0 shadow-none focus-border"
-          placeholder="Tìm kiếm khách hàng theo tên, email, SĐT..."
-        />
-        <button class="btn btn-outline-secondary" @click="clearSearch">Xóa</button>
-      </div>
+      <input
+        v-model="keyword"
+        type="text"
+        class="form-control shadow-sm"
+        placeholder="Tìm kiếm khách hàng theo tên, email, SĐT..."
+      />
     </div>
 
     <!-- Bảng dữ liệu -->
     <div class="table-responsive rounded shadow-sm border">
-      <table class="table table-bordered table-hover text-center bg-white mb-0">
-        <thead class="table-success">
+      <table class="table table-hover align-middle text-center bg-white mb-0">
+        <thead class="table-success text-dark">
           <tr>
             <th>Mã</th>
             <th>Họ tên</th>
@@ -29,46 +25,37 @@
             <th>SĐT</th>
             <th>Địa chỉ</th>
             <th>Trạng thái</th>
-            <th>Xác thực</th>
             <th>Ảnh đại diện</th>
             <th>Hành động</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="kh in pagedData" :key="kh.maKH">
-            <td>{{ kh.maKH }}</td>
+            <td class="fw-bold text-success">#{{ kh.maKH }}</td>
             <td class="text-start">{{ kh.hoTen }}</td>
             <td>{{ kh.email }}</td>
             <td>{{ kh.soDienThoai }}</td>
             <td class="text-start">{{ kh.diaChi }}</td>
             <td>
-              <span class="badge" :class="kh.trangThai ? 'bg-success' : 'bg-secondary'">
+              <span class="badge px-3 py-2" :class="kh.trangThai ? 'bg-success' : 'bg-secondary'">
                 {{ kh.trangThai ? 'Hoạt động' : 'Đã khóa' }}
               </span>
             </td>
             <td>
-              <i
-                :class="
-                  kh.daXacThuc
-                    ? 'bi bi-check-circle-fill text-success'
-                    : 'bi bi-x-circle-fill text-danger'
-                "
-              ></i>
-            </td>
-            <td>
               <img
                 :src="getFullImageUrl(kh.hinhAnh)"
-                class="rounded-circle border"
+                class="rounded-circle border shadow-sm"
                 style="width: 48px; height: 48px; object-fit: cover"
               />
             </td>
             <td>
+              <!-- Nút Khóa/Mở duy nhất -->
               <button
-                class="btn btn-sm"
-                :class="kh.trangThai ? 'btn-outline-danger' : 'btn-outline-success'"
+                class="btn btn-danger btn-sm d-flex align-items-center justify-content-center action-square"
+                :title="kh.trangThai ? 'Khóa tài khoản' : 'Mở tài khoản'"
                 @click="toggleTrangThai(kh.maKH)"
               >
-                {{ kh.trangThai ? 'Khoá' : 'Mở' }}
+                <i :class="kh.trangThai ? 'bi bi-lock' : 'bi bi-unlock'"></i>
               </button>
             </td>
           </tr>
@@ -78,9 +65,9 @@
 
     <!-- Phân trang -->
     <div class="d-flex justify-content-between align-items-center mt-3">
-      <small class="text-muted"
-        >Hiển thị {{ pagedData.length }} / {{ khachHangLoc.length }} khách hàng</small
-      >
+      <small class="text-muted">
+        Hiển thị {{ pagedData.length }} / {{ khachHangLoc.length }} khách hàng
+      </small>
       <ul class="pagination pagination-sm mb-0">
         <li class="page-item" :class="{ disabled: currentPage === 1 }">
           <button class="page-link" @click="currentPage--">«</button>
@@ -196,6 +183,18 @@ function toggleTrangThai(maKH) {
   text-overflow: ellipsis;
   overflow: hidden;
 }
+.action-square {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: all 0.2s ease-in-out;
+}
+.action-square:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
 .input-group-text {
   background-color: #f8f9fa;
   border-radius: 0.375rem 0 0 0.375rem;

@@ -69,8 +69,12 @@
             <strong>Hình thức thanh toán:</strong>
             {{
               donHang.hinhThucThanhToan === 'cod'
-                ? 'Thanh toán khi nhận hàng'
-                : 'Đã thanh toán Online'
+                ? 'Thanh toán khi nhận hàng (COD)'
+                : donHang.hinhThucThanhToan === 'momo'
+                  ? 'Thanh toán MoMo'
+                  : donHang.hinhThucThanhToan === 'vnpay'
+                    ? 'Thanh toán VNPay'
+                    : 'Đã thanh toán Online'
             }}
           </div>
         </div>
