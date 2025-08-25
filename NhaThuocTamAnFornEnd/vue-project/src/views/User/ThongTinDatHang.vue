@@ -119,20 +119,29 @@
               <li
                 v-for="voucher in filteredVouchers"
                 :key="voucher.maKM"
-                class="list-group-item list-group-item-action"
+                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                :class="{
+                  'active-voucher': appliedVoucher && appliedVoucher.maKM === voucher.maKM,
+                }"
                 @click="chonVoucher(voucher)"
                 style="cursor: pointer"
               >
-                <div class="fw-bold">{{ voucher.maCode }}</div>
-                <div class="small">
-                  {{
-                    voucher.loaiKM === 'percent'
-                      ? `Giảm ${voucher.giaTri}%`
-                      : `Giảm ${formatPrice(voucher.giaTri)}`
-                  }}
-                  – Tối thiểu: {{ formatPrice(voucher.donHangToiThieu || 0) }} – HSD:
-                  {{ new Date(voucher.ngayKetThuc).toLocaleDateString() }}
+                <div>
+                  <div class="fw-bold">{{ voucher.maCode }}</div>
+                  <div class="small">
+                    {{
+                      voucher.loaiKM === 'percent'
+                        ? `Giảm ${voucher.giaTri}%`
+                        : `Giảm ${formatPrice(voucher.giaTri)}`
+                    }}
+                    – Tối thiểu: {{ formatPrice(voucher.donHangToiThieu || 0) }} – HSD:
+                    {{ new Date(voucher.ngayKetThuc).toLocaleDateString() }}
+                  </div>
                 </div>
+                <i
+                  v-if="appliedVoucher && appliedVoucher.maKM === voucher.maKM"
+                  class="bi bi-check-circle-fill text-success fs-5"
+                ></i>
               </li>
             </ul>
           </div>
@@ -140,6 +149,12 @@
             <button class="btn btn-secondary" @click="showVoucherModal = false">Đóng</button>
           </div>
         </div>
+      </div>
+    </div>
+    <!-- Overlay Loading -->
+    <div v-if="isLoading" class="loading-overlay">
+      <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem">
+        <span class="visually-hidden">Loading...</span>
       </div>
     </div>
 
@@ -155,6 +170,8 @@ import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import CartStore from './CartStore'
+
+const isLoading = ref(false)
 
 const router = useRouter()
 const form = ref({ name: '', phone: '', address: '', email: '', payment: 'cod', note: '' })
@@ -244,90 +261,95 @@ function getImageUrl(path) {
     : `http://localhost:8080/${path.startsWith('uploads/') ? path : 'uploads/' + path}`
 }
 
-function datHang() {
+async function datHang() {
   if (!form.value.name || !form.value.phone || !form.value.address) {
     alert('❗ Vui lòng điền đầy đủ thông tin nhận hàng!')
     return
   }
 
-  const dto = {
-    maKH: userInfo.value?.maKH || null,
-    maKM: appliedVoucher.value?.maKM || null,
-    diaChiNhan: form.value.address,
-    soDienThoaiNhan: form.value.phone,
-    hoTenNguoiNhan: form.value.name,
-    emailNguoiNhan: form.value.email,
-    ghiChu: form.value.note,
-    hinhThucThanhToan: form.value.payment,
-    daThanhToan: form.value.payment !== 'cod',
+  isLoading.value = true // ✅ bật overlay loading
+  try {
+    const dto = {
+      maKH: userInfo.value?.maKH || null,
+      maKM: appliedVoucher.value?.maKM || null, // chỉ 1 voucher
+      diaChiNhan: form.value.address,
+      soDienThoaiNhan: form.value.phone,
+      hoTenNguoiNhan: form.value.name,
+      emailNguoiNhan: form.value.email,
+      ghiChu: form.value.note,
+      hinhThucThanhToan: form.value.payment,
+      daThanhToan: form.value.payment !== 'cod',
 
-    chiTiet: cartItems.value.map((sp) => ({
-      maThuoc: sp.maThuoc || null,
-      maBienThe: sp.maBienThe || null,
-      soLuong: sp.soLuong,
-      donGia: Number(sp.giaBan),
-    })),
-  }
+      chiTiet: cartItems.value.map((sp) => ({
+        maThuoc: sp.maThuoc || null,
+        maBienThe: sp.maBienThe || null,
+        soLuong: sp.soLuong,
+        donGia: Number(sp.giaBan),
+      })),
+    }
 
-  const tongTien = totalAfterDiscount.value
+    const tongTien = totalAfterDiscount.value
 
-  // 👉 Nếu là COD → tạo đơn hàng trực tiếp
-  if (form.value.payment === 'cod') {
-    axios
-      .post('http://localhost:8080/api/donhang/create', dto)
-      .then((res) => {
-        const maDonHang = res.data?.maDonHang
+    // ✅ COD
+    if (form.value.payment === 'cod') {
+      const res = await axios.post('http://localhost:8080/api/donhang/create', dto)
+      const maDonHang = res.data?.maDonHang
 
-        // Xóa giỏ hàng
-        const allCart = JSON.parse(localStorage.getItem(storageKey.value) || '[]')
-        const remaining = allCart.filter(
-          (item) =>
-            !cartItems.value.some(
-              (sp) =>
-                sp.maThuoc === item.maThuoc && (sp.maBienThe || null) === (item.maBienThe || null),
-            ),
-        )
-        localStorage.setItem(storageKey.value, JSON.stringify(remaining))
-        localStorage.removeItem('selectedItems')
-        CartStore.updateCount()
+      // Xoá giỏ hàng đã mua
+      const allCart = JSON.parse(localStorage.getItem(storageKey.value) || '[]')
+      const remaining = allCart.filter(
+        (item) =>
+          !cartItems.value.some(
+            (sp) =>
+              sp.maThuoc === item.maThuoc && (sp.maBienThe || null) === (item.maBienThe || null),
+          ),
+      )
+      localStorage.setItem(storageKey.value, JSON.stringify(remaining))
+      localStorage.removeItem('selectedItems')
+      CartStore.updateCount()
 
-        alert('✅ Đặt hàng thành công (COD)!')
-        if (!userInfo.value?.maKH) localStorage.setItem('guestOrderCode', maDonHang)
-        router.push('/dat-hang-thanh-cong')
-      })
-      .catch((err) => {
-        console.error('❌ Lỗi tạo đơn hàng COD:', err)
-        alert('❌ Không thể tạo đơn hàng!')
-      })
+      alert('✅ Đặt hàng thành công (COD)!')
+      if (!userInfo.value?.maKH) localStorage.setItem('guestOrderCode', maDonHang)
+      router.push('/dat-hang-thanh-cong')
+      return
+    }
 
-    return
-  }
+    // ✅ Online (Momo / VNPay)
+    const apiUrl =
+      form.value.payment === 'vnpay'
+        ? 'http://localhost:8080/api/thanh-toan/vnpay'
+        : 'http://localhost:8080/api/thanh-toan/momo'
 
-  // 👉 Nếu là VNPAY hoặc MOMO → lấy URL thanh toán
-  const apiUrl =
-    form.value.payment === 'vnpay'
-      ? 'http://localhost:8080/api/thanh-toan/vnpay'
-      : 'http://localhost:8080/api/thanh-toan/momo'
-
-  // ❗ GỬI ĐÚNG DẠNG { donHangDTO: ..., tongTien: ... }
-  axios
-    .post(apiUrl, {
+    const res = await axios.post(apiUrl, {
       donHangDTO: dto,
       tongTien: tongTien,
     })
-    .then((res) => {
-      const paymentUrl = form.value.payment === 'vnpay' ? res.data.paymentUrl : res.data.payUrl
 
-      if (paymentUrl) {
-        window.location.href = paymentUrl
-      } else {
-        alert('❌ Không thể tạo URL thanh toán!')
-      }
-    })
-    .catch((err) => {
-      console.error('❌ Lỗi tạo URL thanh toán:', err)
-      alert('❌ Không thể khởi tạo thanh toán!')
-    })
+    const paymentUrl = form.value.payment === 'vnpay' ? res.data.paymentUrl : res.data.payUrl
+    if (paymentUrl) {
+      // Xoá giỏ hàng đã mua
+      const allCart = JSON.parse(localStorage.getItem(storageKey.value) || '[]')
+      const remaining = allCart.filter(
+        (item) =>
+          !cartItems.value.some(
+            (sp) =>
+              sp.maThuoc === item.maThuoc && (sp.maBienThe || null) === (item.maBienThe || null),
+          ),
+      )
+      localStorage.setItem(storageKey.value, JSON.stringify(remaining))
+      localStorage.removeItem('selectedItems')
+      CartStore.updateCount()
+
+      window.location.href = paymentUrl
+    } else {
+      alert('❌ Không thể tạo URL thanh toán!')
+    }
+  } catch (err) {
+    console.error('❌ Lỗi đặt hàng:', err)
+    alert('❌ Không thể đặt hàng!')
+  } finally {
+    isLoading.value = false // ✅ tắt overlay loading
+  }
 }
 </script>
 
@@ -345,5 +367,21 @@ function datHang() {
 }
 .modal {
   z-index: 1050;
+}
+.active-voucher {
+  background-color: #d1f7d1 !important;
+  border-left: 4px solid #28a745;
+}
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
 }
 </style>

@@ -29,7 +29,8 @@
               </div>
               <div class="col-md-2">Giá</div>
               <div class="col-md-2">Số lượng</div>
-              <div class="col-md-1">Đơn vị</div>
+              <div class="col-md-2">Đơn vị</div>
+              <div class="col-md-1"></div>
             </div>
 
             <div
@@ -54,7 +55,12 @@
                   class="me-2"
                 />
                 <div>
-                  <div class="fw-semibold">{{ sp.tenThuoc || sp.tenSP || sp.name }}</div>
+                  <!-- Tên + Quy cách -->
+                  <div class="fw-semibold">
+                    {{ sp.tenThuoc || sp.tenSP || sp.name }}
+                    <span v-if="sp.moTaQuyCach"> - {{ sp.moTaQuyCach }}</span>
+                  </div>
+
                   <div class="text-danger small" v-if="trangThaiTonKho[index]?.hetHang">
                     (Sản phẩm đã hết hàng)
                   </div>
@@ -86,11 +92,12 @@
                 </div>
               </div>
 
-              <div class="col-md-1">
-                <span>{{ sp.donViTinh || '---' }}</span>
+              <!-- Chỉ đơn vị -->
+              <div class="col-md-2">
+                <span>{{ sp.donViTinh }}</span>
               </div>
 
-              <div class="col-md-2">
+              <div class="col-md-1">
                 <i
                   class="bi bi-trash3 text-danger"
                   role="button"
@@ -137,7 +144,7 @@ import Navbar from '../User/Navbar.vue'
 import Footer from '../User/Footer.vue'
 import ToastMessage from '../ToastMessage.vue'
 import { CartStore } from './CartStore.js'
-import { ref, watchEffect, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
@@ -150,14 +157,43 @@ const chonTatCa = ref(false)
 const dsDaChon = ref([])
 const trangThaiTonKho = ref([])
 
-watchEffect(() => {
+onMounted(async () => {
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
   const maKH = userInfo?.maKH || null
   storageKey.value = maKH ? `cart_${maKH}` : 'cart_temp'
   gioHang.value = JSON.parse(localStorage.getItem(storageKey.value)) || []
 
-  if (gioHang.value.length > 0) kiemTraTonKho()
+  if (gioHang.value.length > 0) {
+    await locBoSanPhamDaXoa()
+    kiemTraTonKho()
+  }
 })
+
+async function locBoSanPhamDaXoa() {
+  const ketQua = []
+
+  for (const sp of gioHang.value) {
+    try {
+      const res = await axios.get(`http://localhost:8080/api/thuoc/${sp.maThuoc}`)
+      if (res.data && res.data.daXoa === false) {
+        ketQua.push(sp)
+      }
+    } catch (err) {
+      // Nếu không tìm thấy thuốc (có thể đã bị xóa) thì bỏ qua
+      console.warn('Bỏ sản phẩm đã bị xóa:', sp.tenThuoc || sp.maThuoc)
+    }
+  }
+
+  if (ketQua.length < gioHang.value.length) {
+    showToast(
+      '🗑 Một số sản phẩm đã bị xóa khỏi hệ thống và không hiển thị trong giỏ hàng.',
+      'warning',
+    )
+  }
+
+  gioHang.value = ketQua
+  capNhatLocal()
+}
 
 function showToast(msg, type = 'success') {
   toastRef.value?.show(msg, type)
