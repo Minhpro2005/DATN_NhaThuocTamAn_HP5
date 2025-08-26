@@ -1,37 +1,48 @@
 <template>
   <div class="container mt-4">
-    <h4 class="mb-4 text-success fw-bold">Quản lý Biến Thể Thuốc</h4>
+    <h4 class="mb-4 text-success fw-bold">
+      <i class="bi bi-diagram-3-fill me-2"></i> Quản lý Biến Thể Thuốc
+    </h4>
 
     <!-- Bộ lọc -->
-    <div class="row mb-3 g-2">
-      <div class="col-md-4">
-        <input
-          v-model="maThuocFilter"
-          type="number"
-          class="form-control"
-          placeholder="Lọc theo mã thuốc..."
-        />
+    <div class="card shadow-sm mb-3 border-0">
+      <div class="card-body row g-3 align-items-center">
+        <div class="col-md-4">
+          <input
+            v-model="maThuocFilter"
+            type="number"
+            class="form-control"
+            placeholder="🔎 Lọc theo mã thuốc..."
+          />
+        </div>
+        <div class="col-md-4 d-flex align-items-center">
+          <input
+            class="form-check-input me-2"
+            type="checkbox"
+            v-model="hienDaXoa"
+            id="showDeleted"
+          />
+          <label class="form-check-label fw-semibold" for="showDeleted">
+            Hiển thị biến thể đã xóa
+          </label>
+        </div>
+        <div class="col-md-4 text-end" v-if="!hienDaXoa">
+          <button class="btn btn-success" @click="openModal()">
+            <i class="bi bi-plus-circle me-1"></i> Thêm biến thể
+          </button>
+        </div>
       </div>
-      <div class="col-md-4 d-flex align-items-center">
-        <input class="form-check-input me-2" type="checkbox" v-model="hienDaXoa" id="showDeleted" />
-        <label class="form-check-label" for="showDeleted">Hiển thị biến thể đã xóa</label>
-      </div>
-    </div>
-
-    <!-- Nút thêm -->
-    <div class="mb-3" v-if="!hienDaXoa">
-      <button class="btn btn-success" @click="openModal()">➕ Thêm biến thể</button>
     </div>
 
     <!-- Danh sách -->
-    <div class="card shadow-sm">
+    <div class="card shadow-sm border-0">
       <div class="card-body p-0">
-        <table class="table table-bordered table-hover text-center">
+        <table class="table table-bordered table-hover align-middle text-center mb-0">
           <thead class="table-success">
             <tr>
               <th>Mã thuốc</th>
               <th>Mã biến thể</th>
-              <th>Tên biến thể</th>
+              <th class="text-start">Tên biến thể</th>
               <th>Giá bán</th>
               <th>Đơn vị</th>
               <th>Quy cách</th>
@@ -42,41 +53,54 @@
           </thead>
           <tbody>
             <tr v-for="bt in bienTheTrang" :key="bt.maBienThe">
-              <td>{{ bt.maThuoc }}</td>
+              <td class="fw-bold text-success">#{{ bt.maThuoc }}</td>
               <td>{{ bt.maBienThe }}</td>
-              <td>{{ bt.tenBienThe }}</td>
-              <td>{{ formatCurrency(bt.giaBan) }}</td>
+              <td class="text-start">{{ bt.tenBienThe }}</td>
+              <td class="fw-bold text-success">{{ formatCurrency(bt.giaBan) }}</td>
               <td>{{ bt.tenDonViTinh }}</td>
               <td>{{ bt.moTaQuyCach }}</td>
-              <td :class="bt.trangThai ? 'text-success' : 'text-danger'">
-                {{ bt.trangThai ? 'Hoạt động' : 'Ngừng bán' }}
+              <td>
+                <span :class="bt.trangThai ? 'badge bg-success' : 'badge bg-danger'">
+                  {{ bt.trangThai ? 'Hoạt động' : 'Ngừng bán' }}
+                </span>
               </td>
               <td>
                 <img
                   v-if="bt.hinhAnh"
                   :src="getImageUrl(bt.hinhAnh)"
                   alt="ảnh"
-                  width="60"
-                  height="60"
-                  class="rounded"
+                  width="55"
+                  height="55"
+                  class="border rounded shadow-sm"
                 />
+                <i v-else class="bi bi-image fs-3 text-secondary"></i>
               </td>
               <td>
-                <template v-if="!hienDaXoa">
-                  <button class="btn btn-sm btn-warning me-2" @click="openModal(bt)">✏️</button>
-                  <button class="btn btn-sm btn-danger" @click="xoaBienThe(bt.maBienThe)">
-                    🗑️
-                  </button>
-                </template>
-                <template v-else>
-                  <button class="btn btn-sm btn-success" @click="khoiPhucBienThe(bt.maBienThe)">
-                    Khôi phục
-                  </button>
-                </template>
+                <div class="d-flex justify-content-center gap-2">
+                  <template v-if="!hienDaXoa">
+                    <button class="btn btn-sm btn-warning" @click="openModal(bt)" title="Sửa">
+                      <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button
+                      class="btn btn-sm btn-danger"
+                      @click="xoaBienThe(bt.maBienThe)"
+                      title="Xóa"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </template>
+                  <template v-else>
+                    <button class="btn btn-sm btn-success" @click="khoiPhucBienThe(bt.maBienThe)">
+                      <i class="bi bi-arrow-counterclockwise me-1"></i> Khôi phục
+                    </button>
+                  </template>
+                </div>
               </td>
             </tr>
             <tr v-if="bienTheTrang.length === 0">
-              <td colspan="9" class="text-center text-muted">Không có dữ liệu</td>
+              <td colspan="9" class="text-center text-muted py-3">
+                <i class="bi bi-inbox me-2"></i> Không có dữ liệu
+              </td>
             </tr>
           </tbody>
         </table>
@@ -87,77 +111,87 @@
     <template v-if="showModal">
       <div class="modal-backdrop fade show"></div>
       <div class="modal fade show d-block" @click.self="closeModal">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">{{ form.maBienThe ? 'Sửa' : 'Thêm' }} Biến Thể</h5>
-              <button class="btn-close" @click="closeModal"></button>
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content shadow-lg border-0">
+            <!-- Header -->
+            <div class="modal-header bg-success text-white">
+              <h5 class="modal-title">
+                <i class="bi bi-capsule me-2"></i>
+                {{ form.maBienThe ? 'Sửa biến thể' : 'Thêm biến thể mới' }}
+              </h5>
+              <button class="btn-close btn-close-white" @click="closeModal"></button>
             </div>
-            <div class="modal-body">
-              <input
-                v-model="form.maThuoc"
-                type="number"
-                class="form-control mb-3"
-                placeholder="Mã thuốc"
-              />
-              <input
-                v-model="form.tenBienThe"
-                type="text"
-                class="form-control mb-3"
-                placeholder="Tên biến thể"
-              />
-              <input
-                v-model="form.giaBan"
-                type="number"
-                class="form-control mb-3"
-                placeholder="Giá bán"
-              />
 
-              <select v-model="form.maDVT" class="form-select mb-3">
-                <option disabled value="">-- Chọn đơn vị tính --</option>
-                <option v-for="dvt in danhSachDonViTinh" :key="dvt.maDVT" :value="dvt.maDVT">
-                  {{ dvt.ten }}
-                </option>
-              </select>
-
-              <select v-model="form.maQCDG" class="form-select mb-3">
-                <option disabled value="">-- Chọn quy cách --</option>
-                <option v-for="qc in danhSachQuyCach" :key="qc.maQCDG" :value="qc.maQCDG">
-                  {{ qc.moTa }}
-                </option>
-              </select>
-
-              <textarea
-                v-model="form.moTa"
-                class="form-control mb-3"
-                placeholder="Mô tả biến thể"
-              ></textarea>
-              <select v-model="form.trangThai" class="form-select mb-3">
-                <option :value="true">Hoạt động</option>
-                <option :value="false">Ngừng bán</option>
-              </select>
-              <input
-                type="file"
-                accept="image/*"
-                class="form-control mb-3"
-                @change="onFileChange"
-              />
-              <img
-                v-if="form.hinhAnh"
-                :src="getImageUrl(form.hinhAnh)"
-                width="100"
-                class="rounded border"
-              />
+            <!-- Body -->
+            <div class="modal-body row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Mã thuốc</label>
+                <input v-model="form.maThuoc" type="number" class="form-control" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Tên biến thể</label>
+                <input v-model="form.tenBienThe" type="text" class="form-control" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Giá bán</label>
+                <input v-model="form.giaBan" type="number" class="form-control" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Trạng thái</label>
+                <select v-model="form.trangThai" class="form-select">
+                  <option :value="true">Hoạt động</option>
+                  <option :value="false">Ngừng bán</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Đơn vị tính</label>
+                <select v-model="form.maDVT" class="form-select">
+                  <option disabled value="">-- Chọn đơn vị tính --</option>
+                  <option v-for="dvt in danhSachDonViTinh" :key="dvt.maDVT" :value="dvt.maDVT">
+                    {{ dvt.ten }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Quy cách</label>
+                <select v-model="form.maQCDG" class="form-select">
+                  <option disabled value="">-- Chọn quy cách --</option>
+                  <option v-for="qc in danhSachQuyCach" :key="qc.maQCDG" :value="qc.maQCDG">
+                    {{ qc.moTa }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Mô tả</label>
+                <textarea v-model="form.moTa" class="form-control" rows="2"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Ảnh</label>
+                <input type="file" accept="image/*" class="form-control" @change="onFileChange" />
+                <img
+                  v-if="form.hinhAnh"
+                  :src="getImageUrl(form.hinhAnh)"
+                  width="100"
+                  class="rounded border mt-2"
+                />
+              </div>
             </div>
+
+            <!-- Footer -->
             <div class="modal-footer">
-              <button class="btn btn-primary" @click="luuBienThe">Lưu</button>
-              <button class="btn btn-secondary" @click="closeModal">Hủy</button>
+              <button class="btn btn-success" @click="luuBienThe">
+                <i class="bi bi-save me-1"></i> Lưu
+              </button>
+              <button class="btn btn-secondary" @click="closeModal">
+                <i class="bi bi-x-circle me-1"></i> Hủy
+              </button>
             </div>
           </div>
         </div>
       </div>
     </template>
 
+    <!-- Pagination + Toast -->
     <Pagination :current-page="currentPage" :total-pages="totalPages" @change-page="changePage" />
     <ToastMessage ref="toastRef" />
   </div>

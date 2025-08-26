@@ -1,6 +1,6 @@
 <template>
   <div class="container py-4">
-    <h4 class="mb-4 text-success">Quản lý ảnh thuốc</h4>
+    <h4 class="mb-4 text-success fw-bold">🖼 Quản lý ảnh thuốc</h4>
 
     <!-- Bộ lọc -->
     <div class="row mb-3">
@@ -8,39 +8,64 @@
         <input
           v-model="maThuocFilter"
           type="number"
-          class="form-control"
-          placeholder="Lọc theo mã thuốc..."
+          class="form-control shadow-sm"
+          placeholder="🔍 Lọc theo mã thuốc..."
         />
       </div>
       <div class="col-md-4">
-        <button class="btn btn-success" @click="openUploadModal()">➕ Thêm ảnh</button>
+        <button class="btn btn-success shadow-sm rounded-pill px-4" @click="openUploadModal()">
+          ➕ Thêm ảnh
+        </button>
       </div>
     </div>
 
     <!-- Danh sách ảnh -->
     <div class="card shadow-sm">
       <div class="card-body">
-        <table class="table table-bordered text-center">
+        <table class="table table-hover align-middle text-center">
           <thead class="table-success">
             <tr>
               <th>Mã thuốc</th>
               <th>ID</th>
               <th>Ảnh</th>
-              <th>Chính</th>
+              <th>Ảnh chính</th>
               <th>Hành động</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="anh in anhTrang" :key="anh.maAnhThuoc">
-              <td>{{ anh.maThuoc }}</td>
+              <td class="fw-bold text-success">#{{ anh.maThuoc }}</td>
               <td>{{ anh.maAnhThuoc }}</td>
-              <td><img :src="getFullImageUrl(anh.hinhAnh)" width="80" height="80" /></td>
-              <td><span v-if="anh.anhChinh">✔️</span></td>
               <td>
-                <button class="btn btn-warning btn-sm me-2" @click="openUploadModal(anh)">
-                  Sửa
-                </button>
-                <button class="btn btn-danger btn-sm" @click="xoaAnh(anh.maAnhThuoc)">Xóa</button>
+                <img :src="getFullImageUrl(anh.hinhAnh)" width="80" height="80" />
+              </td>
+              <td>
+                <span
+                  v-if="anh.anhChinh"
+                  class="badge bg-success d-inline-flex align-items-center gap-1 px-3 py-2 fs-6 shadow-sm"
+                >
+                  <i class="bi bi-check-circle-fill"></i>
+                </span>
+              </td>
+              <td>
+                <div class="d-flex justify-content-center gap-2">
+                  <!-- Sửa -->
+                  <button
+                    class="btn btn-warning btn-sm d-flex align-items-center justify-content-center action-square"
+                    @click="openUploadModal(anh)"
+                    title="Chỉnh sửa"
+                  >
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <!-- Xóa -->
+                  <button
+                    class="btn btn-danger btn-sm d-flex align-items-center justify-content-center action-square"
+                    @click="xoaAnh(anh.maAnhThuoc)"
+                    title="Xóa"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -55,17 +80,17 @@
       </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal thêm/sửa ảnh -->
     <div
       class="modal fade"
       :class="{ show: showModal }"
       :style="showModal ? 'display:block' : ''"
       @click.self="closeModal"
     >
-      <div class="modal-dialog">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">{{ isEditing ? 'Sửa' : 'Thêm' }} ảnh thuốc</h5>
+            <h5 class="modal-title">{{ isEditing ? '✏ Sửa' : '➕ Thêm' }} ảnh thuốc</h5>
             <button class="btn-close" @click="closeModal"></button>
           </div>
           <div class="modal-body">
@@ -87,8 +112,8 @@
             <UploadImg :initial="newImage.hinhAnh" @file-selected="handleFileUpload" />
           </div>
           <div class="modal-footer">
-            <button class="btn btn-primary" @click="luuAnh">Lưu</button>
             <button class="btn btn-secondary" @click="closeModal">Hủy</button>
+            <button class="btn btn-success px-4" @click="luuAnh">💾 Lưu</button>
           </div>
         </div>
       </div>
