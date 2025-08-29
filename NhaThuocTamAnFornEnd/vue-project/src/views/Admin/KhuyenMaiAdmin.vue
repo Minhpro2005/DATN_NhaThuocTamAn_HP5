@@ -1,75 +1,175 @@
 <template>
   <div class="container py-4">
-    <h4 class="text-success mb-3">🎁 Quản Lý Khuyến Mãi</h4>
+    <h4 class="text-success mb-3">🎁 Quản Lý Voucher</h4>
 
-    <!-- Tìm kiếm -->
-    <div class="input-group mb-3">
-      <input v-model="keyword" class="form-control" placeholder="🔎 Tìm tên khuyến mãi..." />
-      <button class="btn btn-outline-secondary" @click="keyword = ''">Xóa</button>
+    <!-- Bộ lọc -->
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label">🔎 Tên hoặc Mã Code</label>
+            <input
+              v-model="filter.keyword"
+              class="form-control"
+              placeholder="Tên hoặc mã code..."
+            />
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label">📌 Trạng thái</label>
+            <select v-model="filter.trangThai" class="form-select">
+              <option value="">-- Tất cả --</option>
+              <option value="true">Kích hoạt</option>
+              <option value="false">Tạm ẩn</option>
+            </select>
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label">📅 Bắt đầu</label>
+            <input type="date" v-model="filter.tuNgay" class="form-control" />
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label">📅 Kết thúc</label>
+            <input type="date" v-model="filter.denNgay" class="form-control" />
+          </div>
+
+          <div class="col-md-1">
+            <button class="btn btn-outline-secondary w-100" @click="resetFilter">
+              <i class="bi bi-x-circle"></i>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Thêm mới -->
     <div class="text-end mb-2">
-      <button class="btn btn-success" @click="openCreateForm">➕ Thêm khuyến mãi</button>
+      <button class="btn btn-success" @click="openCreateForm">
+        <i class="bi bi-plus-circle me-1"></i> Thêm voucher
+      </button>
     </div>
 
     <!-- Danh sách -->
-    <table class="table table-bordered table-hover small align-middle">
-      <thead class="table-success text-center">
+    <table class="table table-bordered text-center align-middle">
+      <thead class="table-success">
         <tr>
           <th>Mã</th>
           <th>Tên KM</th>
+          <th>Code</th>
           <th>Loại</th>
           <th>Giá trị</th>
+          <th>Giảm tối đa</th>
+          <th>Đơn tối thiểu</th>
+          <th>Còn lại</th>
           <th>Thời gian</th>
-          <th>Mô tả</th>
           <th>Trạng thái</th>
           <th>Hành động</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="km in filteredKhuyenMai" :key="km.maKM" class="text-center">
-          <td>{{ km.maKM }}</td>
-          <td>{{ km.tenKM }}</td>
-          <td>{{ km.loai }}</td>
-          <td>{{ km.loai === 'percent' ? km.giaTri + '%' : formatCurrency(km.giaTri) }}</td>
-          <td>{{ formatDate(km.ngayBatDau) }} → {{ formatDate(km.ngayKetThuc) }}</td>
-          <td>{{ km.moTa || '-' }}</td>
+        <tr v-for="v in paginatedList" :key="v.maKM">
+          <td>{{ v.maKM }}</td>
+          <td>{{ v.tenKM }}</td>
           <td>
-            <span :class="km.trangThai ? 'text-success' : 'text-danger'">
-              {{ km.trangThai ? 'Áp dụng' : 'Ẩn' }}
+            <span class="badge bg-info text-dark">{{ v.maCode }}</span>
+          </td>
+          <td>{{ v.loaiKM === 'percent' ? 'Phần trăm' : 'Giảm tiền' }}</td>
+          <td>{{ v.loaiKM === 'percent' ? v.giaTri + '%' : formatCurrency(v.giaTri) }}</td>
+          <td>{{ formatCurrency(v.giaTriToiDa || 0) }}</td>
+          <td>{{ formatCurrency(v.donHangToiThieu || 0) }}</td>
+          <td>{{ v.soLuong - (v.daSuDung || 0) }}</td>
+          <td>{{ formatDate(v.ngayBatDau) }} → {{ formatDate(v.ngayKetThuc) }}</td>
+          <td>
+            <span class="badge" :class="v.trangThai ? 'bg-success' : 'bg-secondary'">
+              {{ v.trangThai ? 'Kích hoạt' : 'Tạm ẩn' }}
             </span>
           </td>
           <td>
-            <button class="btn btn-sm btn-warning me-1" @click="edit(km)">Sửa</button>
-            <button class="btn btn-sm btn-danger me-1" @click="remove(km.maKM)">Xóa</button>
-            <button class="btn btn-sm btn-outline-dark" @click="toggle(km)">
-              {{ km.trangThai ? 'Ẩn' : 'Hiện' }}
-            </button>
+            <div class="d-flex justify-content-center gap-2">
+              <button class="btn btn-sm btn-warning" @click="edit(v)">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button
+                class="btn btn-sm"
+                :class="v.trangThai ? 'btn-secondary' : 'btn-success'"
+                @click="toggleTrangThai(v)"
+              >
+                <i :class="v.trangThai ? 'bi bi-toggle-off' : 'bi bi-toggle-on'"></i>
+              </button>
+              <button class="btn btn-sm btn-danger" @click="remove(v.maKM)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
           </td>
+        </tr>
+        <tr v-if="filtered.length === 0">
+          <td colspan="11" class="text-muted">Không có voucher nào phù hợp.</td>
         </tr>
       </tbody>
     </table>
 
-    <!-- Form Khuyến Mãi -->
+    <!-- Phân trang -->
+    <Pagination :current-page="currentPage" :total-pages="totalPages" @change-page="changePage" />
+
+    <!-- Form tạo / sửa -->
     <div v-if="showForm" class="modal-overlay">
-      <div class="modal-content card p-4">
-        <h5 class="mb-3 text-success">{{ isEdit ? '✏️ Sửa' : '➕ Thêm' }} khuyến mãi</h5>
-        <div class="row g-3">
+      <div class="modal-content p-4">
+        <h5 class="bg-success text-white p-2 rounded">
+          {{ isEdit ? 'Sửa voucher' : 'Thêm voucher' }}
+        </h5>
+
+        <div class="row g-3 mt-2">
           <div class="col-md-6">
-            <label class="form-label">Tên khuyến mãi</label>
-            <input v-model="form.tenKM" class="form-control" />
+            <input v-model="form.tenKM" class="form-control" placeholder="Tên khuyến mãi" />
           </div>
-          <div class="col-md-3">
-            <label class="form-label">Loại</label>
-            <select v-model="form.loai" class="form-select">
+          <div class="col-md-6">
+            <input v-model="form.maCode" class="form-control" placeholder="Mã code" />
+          </div>
+
+          <div class="col-md-4">
+            <select v-model="form.loaiKM" class="form-select">
               <option value="percent">Phần trăm</option>
-              <option value="money">Giảm trực tiếp</option>
+              <option value="money">Giảm tiền</option>
             </select>
           </div>
-          <div class="col-md-3">
-            <label class="form-label">Giá trị</label>
-            <input type="number" v-model="form.giaTri" class="form-control" />
+
+          <div class="col-md-4">
+            <input
+              type="number"
+              v-model.number="form.giaTri"
+              class="form-control"
+              placeholder="Giá trị"
+            />
+          </div>
+          <div class="col-md-4" v-if="form.loaiKM === 'percent'">
+            <input
+              type="number"
+              v-model.number="form.giaTriToiDa"
+              class="form-control"
+              placeholder="Giảm tối đa"
+            />
+          </div>
+
+          <div class="col-md-4">
+            <input
+              type="number"
+              v-model.number="form.donHangToiThieu"
+              class="form-control"
+              placeholder="Đơn tối thiểu"
+            />
+          </div>
+          <div class="col-md-4">
+            <input
+              type="number"
+              v-model.number="form.soLuong"
+              class="form-control"
+              placeholder="Số lượng"
+            />
+          </div>
+          <div class="col-md-4" v-if="isEdit">
+            <label class="form-label">Đã sử dụng</label>
+            <input type="number" v-model.number="form.daSuDung" class="form-control" readonly />
           </div>
 
           <div class="col-md-6">
@@ -82,52 +182,123 @@
           </div>
 
           <div class="col-12">
-            <label class="form-label">Mô tả</label>
-            <textarea v-model="form.moTa" class="form-control" rows="2"></textarea>
+            <textarea
+              v-model="form.moTa"
+              class="form-control"
+              placeholder="Mô tả"
+              rows="2"
+            ></textarea>
+          </div>
+
+          <div class="col-12 form-check">
+            <input type="checkbox" class="form-check-input" v-model="form.trangThai" />
+            <label class="form-check-label">Đang hoạt động</label>
           </div>
         </div>
 
         <div class="text-end mt-3">
-          <button class="btn btn-primary" @click="save">💾 Lưu</button>
-          <button class="btn btn-secondary ms-2" @click="closeForm">❌ Hủy</button>
+          <button class="btn btn-primary" @click="save"><i class="bi bi-save me-1"></i> Lưu</button>
+          <button class="btn btn-secondary ms-2" @click="closeForm">Hủy</button>
         </div>
       </div>
     </div>
+
+    <!-- Toast -->
+    <ToastMessage ref="toastRef" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
+import ToastMessage from '../ToastMessage.vue'
+import Pagination from '../Pagination.vue'
 
-const khuyenMaiList = ref(JSON.parse(localStorage.getItem('khuyenMaiList')) || [])
-const keyword = ref('')
+const list = ref([])
 const showForm = ref(false)
 const isEdit = ref(false)
+const form = ref({})
+const toastRef = ref(null)
+const baseURL = 'http://localhost:8080/api/khuyen-mai'
 
-const form = ref({
-  maKM: null,
-  tenKM: '',
-  loai: 'percent',
-  giaTri: 0,
-  ngayBatDau: '',
-  ngayKetThuc: '',
-  moTa: '',
-  trangThai: true,
+// Phân trang
+const currentPage = ref(1)
+const pageSize = 5
+
+const filter = ref({
+  keyword: '',
+  trangThai: '',
+  tuNgay: '',
+  denNgay: '',
 })
 
-const filteredKhuyenMai = computed(() =>
-  khuyenMaiList.value.filter((k) => k.tenKM.toLowerCase().includes(keyword.value.toLowerCase())),
-)
+const filtered = computed(() => {
+  return list.value.filter((v) => {
+    const keywordMatch = (v.tenKM + v.maCode)
+      .toLowerCase()
+      .includes(filter.value.keyword.toLowerCase())
 
-const formatDate = (d) => (d ? new Date(d).toLocaleDateString('vi-VN') : '-')
-const formatCurrency = (v) => v.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
+    const statusMatch =
+      filter.value.trangThai === '' ? true : v.trangThai === (filter.value.trangThai === 'true')
 
-const openCreateForm = () => {
+    const ngayBD = new Date(v.ngayBatDau)
+    const ngayKT = new Date(v.ngayKetThuc)
+    const tuNgay = filter.value.tuNgay ? new Date(filter.value.tuNgay) : null
+    const denNgay = filter.value.denNgay ? new Date(filter.value.denNgay) : null
+
+    const dateMatch =
+      (!tuNgay || ngayBD >= tuNgay || ngayKT >= tuNgay) &&
+      (!denNgay || ngayBD <= denNgay || ngayKT <= denNgay)
+
+    return keywordMatch && statusMatch && dateMatch
+  })
+})
+
+const totalPages = computed(() => Math.ceil(filtered.value.length / pageSize))
+const paginatedList = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return filtered.value.slice(start, start + pageSize)
+})
+const changePage = (page) => {
+  currentPage.value = page
+}
+
+function resetFilter() {
+  filter.value = {
+    keyword: '',
+    trangThai: '',
+    tuNgay: '',
+    denNgay: '',
+  }
+}
+
+onMounted(fetchData)
+
+function fetchData() {
+  axios
+    .get(baseURL)
+    .then((res) => (list.value = res.data))
+    .catch((err) => toastRef.value.show('❌ Lỗi tải voucher: ' + err.message, 'error'))
+}
+
+function formatDate(d) {
+  return d ? new Date(d).toLocaleDateString('vi-VN') : '-'
+}
+
+function formatCurrency(v) {
+  return (v || 0).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
+}
+
+function openCreateForm() {
   form.value = {
-    maKM: Date.now(),
     tenKM: '',
-    loai: 'percent',
+    maCode: '',
+    loaiKM: 'percent',
     giaTri: 0,
+    giaTriToiDa: 0,
+    donHangToiThieu: 0,
+    soLuong: 1,
+    daSuDung: 0,
     ngayBatDau: '',
     ngayKetThuc: '',
     moTa: '',
@@ -137,45 +308,76 @@ const openCreateForm = () => {
   showForm.value = true
 }
 
-const edit = (km) => {
-  form.value = { ...km }
+function edit(v) {
+  form.value = { ...v }
   isEdit.value = true
   showForm.value = true
 }
 
-const closeForm = () => {
+function closeForm() {
   showForm.value = false
 }
 
-const save = () => {
-  if (!form.value.ngayBatDau || !form.value.ngayKetThuc) {
-    alert('Vui lòng nhập đầy đủ thời gian khuyến mãi!')
+function toggleTrangThai(v) {
+  const newStatus = !v.trangThai
+  if (!confirm(`Bạn có chắc muốn ${newStatus ? 'bật' : 'tắt'} khuyến mãi này?`)) return
+
+  axios
+    .put(`${baseURL}/${v.maKM}`, { ...v, trangThai: newStatus })
+    .then(() => {
+      toastRef.value.show(`✅ Đã ${newStatus ? 'bật' : 'tắt'} khuyến mãi`, 'success')
+      fetchData()
+    })
+    .catch((err) => toastRef.value.show('❌ Lỗi cập nhật: ' + err.message, 'error'))
+}
+
+function save() {
+  const f = form.value
+  if (!f.tenKM || !f.maCode || !f.giaTri || f.giaTri <= 0 || f.soLuong <= 0) {
+    toastRef.value.show('⚠️ Nhập đầy đủ tên, mã code, giá trị > 0, số lượng > 0.', 'warning')
     return
   }
 
-  const index = khuyenMaiList.value.findIndex((k) => k.maKM === form.value.maKM)
-  if (isEdit.value && index !== -1) {
-    khuyenMaiList.value[index] = { ...form.value }
-  } else {
-    khuyenMaiList.value.push({ ...form.value })
+  if (f.loaiKM === 'percent' && (!f.giaTriToiDa || f.giaTriToiDa <= 0)) {
+    toastRef.value.show('⚠️ Phải nhập giảm tối đa > 0 với loại phần trăm.', 'warning')
+    return
   }
-  localStorage.setItem('khuyenMaiList', JSON.stringify(khuyenMaiList.value))
-  showForm.value = false
+
+  if (!f.ngayBatDau || !f.ngayKetThuc || new Date(f.ngayBatDau) > new Date(f.ngayKetThuc)) {
+    toastRef.value.show('⚠️ Ngày bắt đầu không được sau ngày kết thúc.', 'warning')
+    return
+  }
+
+  const dto = {
+    ...f,
+    giaTri: +f.giaTri,
+    giaTriToiDa: f.loaiKM === 'percent' ? +f.giaTriToiDa : null,
+    donHangToiThieu: +f.donHangToiThieu,
+    soLuong: +f.soLuong,
+    daSuDung: +f.daSuDung || 0,
+  }
+
+  const request = isEdit.value ? axios.put(`${baseURL}/${dto.maKM}`, dto) : axios.post(baseURL, dto)
+
+  request
+    .then(() => {
+      toastRef.value.show('✅ Lưu thành công', 'success')
+      fetchData()
+      closeForm()
+    })
+    .catch((err) => toastRef.value.show('❌ Lỗi lưu: ' + err.message, 'error'))
 }
 
-const remove = (id) => {
-  if (confirm('Xóa khuyến mãi?')) {
-    const index = khuyenMaiList.value.findIndex((k) => k.maKM === id)
-    if (index !== -1) {
-      khuyenMaiList.value.splice(index, 1)
-      localStorage.setItem('khuyenMaiList', JSON.stringify(khuyenMaiList.value))
-    }
+function remove(id) {
+  if (confirm('❌ Bạn chắc chắn muốn xóa?')) {
+    axios
+      .delete(`${baseURL}/${id}`)
+      .then(() => {
+        toastRef.value.show('🗑️ Xóa thành công', 'success')
+        fetchData()
+      })
+      .catch((err) => toastRef.value.show('❌ Lỗi xóa: ' + err.message, 'error'))
   }
-}
-
-const toggle = (km) => {
-  km.trangThai = !km.trangThai
-  localStorage.setItem('khuyenMaiList', JSON.stringify(khuyenMaiList.value))
 }
 </script>
 
@@ -192,8 +394,8 @@ const toggle = (km) => {
 .modal-content {
   background: white;
   border-radius: 8px;
-  max-height: 90vh;
-  overflow-y: auto;
   width: 700px;
+  max-height: 95vh;
+  overflow-y: auto;
 }
 </style>
